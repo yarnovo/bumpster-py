@@ -17,19 +17,34 @@ pipx install bump-version
 uv tool install bump-version
 ```
 
-### 开发安装
+### 开发安装（本地测试）
 
 ```bash
 # 克隆仓库
 git clone https://github.com/ai-app-base/bump-version-py.git
 cd bump-version-py
 
-# 使用 uv 安装依赖（推荐）
+# 使用 uv 安装依赖
 uv sync  # 会自动安装所有依赖（包括开发依赖）并使用 uv.lock 确保版本一致
 
-# 或使用传统 pip
-pip install -e .
+# 开发模式安装（类似 npm link）
+uv pip install -e .  # 在当前虚拟环境中安装
+
+# 或者全局安装用于测试（推荐）
+uv tool install -e .  # 全局安装开发版本，类似 npm link 的效果
 ```
+
+#### uv 开发安装说明
+
+- `uv pip install -e .`：在当前虚拟环境中以可编辑模式安装
+  - 只在当前虚拟环境中可用
+  - 适合项目内部开发测试
+
+- `uv tool install -e .`：全局安装开发版本（推荐）
+  - 在任何地方都可以使用 `bump-version-py` 或 `bvp` 命令
+  - 代码修改会立即生效，无需重新安装
+  - 完全等同于 npm link 的效果
+  - 工具会被安装到独立的虚拟环境中，避免依赖冲突
 
 ## 使用方式
 

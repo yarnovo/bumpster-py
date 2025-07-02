@@ -1,0 +1,134 @@
+"""版本管理核心功能模块。"""
+
+from dataclasses import dataclass
+from typing import Optional, Literal
+import re
+
+ReleaseType = Literal["major", "minor", "patch"]
+PrereleaseType = Literal["a", "b", "rc", "dev"]  # Python 风格的预发布类型
+
+
+@dataclass
+class VersionParts:
+    """版本号组成部分。"""
+    major: int
+    minor: int
+    patch: int
+    prerelease_type: Optional[PrereleaseType] = None
+    prerelease_num: Optional[int] = None
+    local: Optional[str] = None  # Python 支持本地版本标识符
+
+
+class VersionManager:
+    """版本管理器。"""
+    
+    def parse_version(self, version: str) -> Optional[VersionParts]:
+        """解析版本号，支持 PEP 440 格式。"""
+        # 支持多种格式：
+        # 1.0.0
+        # 1.0.0a0, 1.0.0.alpha0
+        # 1.0.0b1, 1.0.0.beta1
+        # 1.0.0rc2, 1.0.0.rc2
+        # 1.0.0.dev3
+        # 1.0.0+local.version
+        
+        # 移除可能的 'v' 前缀
+        version = version.lstrip('v')
+        
+        # 正则表达式匹配 PEP 440 格式
+        pattern = r'^(\d+)\.(\d+)\.(\d+)'  # 主版本号
+        pattern += r'(?:'  # 预发布版本（可选）
+        pattern += r'(?:\.)?(a|alpha|b|beta|rc|dev)(?:\.)?(\d+)'
+        pattern += r'|'
+        pattern += r'(a|b|rc)(\d+)'  # 紧凑格式
+        pattern += r')?'
+        pattern += r'(?:\+([a-zA-Z0-9.]+))?$'  # 本地版本（可选）
+        
+        match = re.match(pattern, version)
+        if not match:
+            return None
+        
+        groups = match.groups()
+        major = int(groups[0])
+        minor = int(groups[1])
+        patch = int(groups[2])
+        
+        # 解析预发布类型
+        prerelease_type = None
+        prerelease_num = None
+        
+        if groups[3]:  # 格式如 1.0.0.alpha0
+            type_map = {"alpha": "a", "beta": "b", "rc": "rc", "dev": "dev", "a": "a", "b": "b"}
+            prerelease_type = type_map.get(groups[3])
+            prerelease_num = int(groups[4]) if groups[4] else 0
+        elif groups[5]:  # 格式如 1.0.0a0
+            prerelease_type = groups[5]
+            prerelease_num = int(groups[6]) if groups[6] else 0
+        
+        local = groups[7] if len(groups) > 7 else None
+        
+        return VersionParts(
+            major=major,
+            minor=minor,
+            patch=patch,
+            prerelease_type=prerelease_type,
+            prerelease_num=prerelease_num,
+            local=local
+        )
+    
+    def get_next_version(
+        self,
+        current_version: str,
+        release_type: ReleaseType,
+        is_prerelease: bool,
+        prerelease_type: Optional[PrereleaseType]
+    ) -> str:
+        """计算下一个版本号。"""
+        version_parts = self.parse_version(current_version)
+        if not version_parts:
+            raise ValueError(f"无效的版本号格式: {current_version}")
+        
+        major = version_parts.major
+        minor = version_parts.minor
+        patch = version_parts.patch
+        
+        # 如果当前是预发布版本
+        if version_parts.prerelease_type:
+            if is_prerelease and prerelease_type:
+                if prerelease_type == version_parts.prerelease_type:
+                    # 相同类型：递增版本号
+                    new_num = (version_parts.prerelease_num or 0) + 1
+                    return f"{major}.{minor}.{patch}{prerelease_type}{new_num}"
+                else:
+                    # 不同类型：检查升级路径
+                    prerelease_order = ["dev", "a", "b", "rc"]
+                    current_idx = prerelease_order.index(version_parts.prerelease_type) if version_parts.prerelease_type in prerelease_order else -1
+                    new_idx = prerelease_order.index(prerelease_type) if prerelease_type in prerelease_order else -1
+                    
+                    if new_idx > current_idx:
+                        # 升级预发布类型
+                        return f"{major}.{minor}.{patch}{prerelease_type}0"
+                    else:
+                        # 降级警告，但仍然允许
+                        return f"{major}.{minor}.{patch}{prerelease_type}0"
+            else:
+                # 预发布 -> 正式版：去掉预发布后缀
+                return f"{major}.{minor}.{patch}"
+        else:
+            # 当前是正式版本
+            if release_type == "major":
+                major += 1
+                minor = 0
+                patch = 0
+            elif release_type == "minor":
+                minor += 1
+                patch = 0
+            elif release_type == "patch":
+                patch += 1
+            
+            new_version = f"{major}.{minor}.{patch}"
+            
+            if is_prerelease and prerelease_type:
+                new_version += f"{prerelease_type}0"
+            
+            return new_version

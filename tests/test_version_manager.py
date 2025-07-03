@@ -1,6 +1,7 @@
 """版本管理器单元测试。"""
 
 import pytest
+from packaging.version import InvalidVersion, Version
 
 from bump_version.version_manager import VersionManager
 
@@ -242,3 +243,82 @@ class TestEdgeCases:
 
         with pytest.raises(ValueError, match="无效的版本号格式"):
             manager.get_next_version("invalid", "patch", False, None)
+
+
+class TestPEP440Compliance:
+    """测试生成的版本号是否符合 PEP 440 规范。"""
+
+    def test_all_generated_versions_are_pep440_compliant(self):
+        """测试所有生成的版本号都符合 PEP 440 规范。"""
+        manager = VersionManager()
+
+        test_cases = [
+            # (当前版本, 发布类型, 是否预发布, 预发布类型)
+            ("1.0.0", "patch", False, None),
+            ("1.0.0", "minor", False, None),
+            ("1.0.0", "major", False, None),
+            ("1.0.0", "patch", True, "a"),
+            ("1.0.0", "patch", True, "b"),
+            ("1.0.0", "patch", True, "rc"),
+            ("1.0.0", "patch", True, "dev"),
+            ("1.0.0", "patch", True, "post"),
+            ("1.0.0a0", "patch", True, "a"),
+            ("1.0.0a0", "patch", True, "b"),
+            ("1.0.0b0", "patch", True, "rc"),
+            ("1.0.0rc0", "patch", False, None),
+            ("1.0.0dev0", "patch", True, "dev"),
+            ("1.0.0dev0", "patch", True, "a"),
+            ("2.5.3", "major", True, "a"),
+            ("0.1.0", "minor", True, "b"),
+            ("1.0.0post0", "patch", True, "post"),
+        ]
+
+        for current, release_type, is_prerelease, prerelease_type in test_cases:
+            # 跳过不允许的转换
+            if current.startswith("1.0.0a0") and prerelease_type == "post":
+                continue
+            if "post" in current and prerelease_type in ["a", "b", "rc", "dev"]:
+                continue
+
+            new_version = manager.get_next_version(current, release_type, is_prerelease, prerelease_type)
+
+            # 使用 packaging 库验证版本号
+            try:
+                Version(new_version)
+                # 如果没有抛出异常，说明版本号有效
+                assert True, f"版本号 {new_version} 符合 PEP 440 规范"
+            except InvalidVersion:
+                pytest.fail(f"生成的版本号 {new_version} 不符合 PEP 440 规范（从 {current} 升级）")
+
+    def test_parsed_versions_are_pep440_compliant(self):
+        """测试解析的版本号格式符合 PEP 440。"""
+        manager = VersionManager()
+
+        valid_versions = [
+            "1.0.0",
+            "1.0.0a0",
+            "1.0.0b1",
+            "1.0.0rc2",
+            "1.0.0.dev3",
+            "1.0.0dev3",
+            "1.0.0.post4",
+            "1.0.0post4",
+            "2.1.0.beta1",
+            "3.0.0.alpha0",
+            "0.0.1",
+            "99.99.99",
+        ]
+
+        for version in valid_versions:
+            parsed = manager.parse_version(version)
+            if parsed:
+                # 重构版本号
+                reconstructed = f"{parsed.major}.{parsed.minor}.{parsed.patch}"
+                if parsed.prerelease_type:
+                    reconstructed += f"{parsed.prerelease_type}{parsed.prerelease_num}"
+
+                # 验证重构的版本号符合 PEP 440
+                try:
+                    Version(reconstructed)
+                except InvalidVersion:
+                    pytest.fail(f"重构的版本号 {reconstructed} 不符合 PEP 440 规范")

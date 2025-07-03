@@ -1,4 +1,4 @@
-.PHONY: help sync dev-install-global dev-uninstall-global test format lint type-check check all build publish clean
+.PHONY: help sync dev-install-global dev-uninstall-global test format lint type-check check all build publish clean pre-commit pre-commit-run
 
 # 默认目标：显示帮助信息
 help:
@@ -16,6 +16,10 @@ help:
 	@echo "  make type-check    - 类型检查（pyright）"
 	@echo "  make check         - 运行所有检查（lint + type-check）"
 	@echo "  make all           - 运行所有检查和测试"
+	@echo ""
+	@echo "Pre-commit hooks："
+	@echo "  make pre-commit     - 安装 pre-commit hooks"
+	@echo "  make pre-commit-run - 运行 pre-commit 检查（不提交）"
 	@echo ""
 	@echo "构建和发布："
 	@echo "  make build         - 构建包"
@@ -68,6 +72,16 @@ build:
 # 发布到 PyPI
 publish:
 	uv publish
+
+# 安装 pre-commit hooks
+pre-commit:
+	uv run pre-commit install
+	uv run pre-commit install --hook-type pre-push
+	@echo "Pre-commit hooks installed successfully!"
+
+# 运行 pre-commit 检查（不提交）
+pre-commit-run:
+	uv run pre-commit run --all-files
 
 # 清理构建文件和缓存
 clean:

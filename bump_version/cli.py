@@ -2,21 +2,17 @@
 """主命令行界面模块。"""
 
 import os
-import sys
 import subprocess
+import sys
 from pathlib import Path
-from typing import Optional, Tuple, Dict, Any
 
-import click
 import toml
+from inquirer import confirm, list_input
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-from inquirer import list_input, confirm
-from packaging.version import Version, InvalidVersion
 
-from .version_manager import VersionManager, VersionParts, ReleaseType, PrereleaseType
-
+from .version_manager import VersionManager
 
 console = Console()
 
@@ -24,13 +20,7 @@ console = Console()
 def exec_command(command: str, silent: bool = False) -> str:
     """执行命令并返回结果。"""
     try:
-        result = subprocess.run(
-            command,
-            shell=True,
-            capture_output=True,
-            text=True,
-            check=True
-        )
+        result = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)
         if not silent:
             console.print(result.stdout.strip())
         return result.stdout.strip()
@@ -42,32 +32,33 @@ def exec_command(command: str, silent: bool = False) -> str:
         raise e
 
 
-def get_current_version() -> Tuple[str, str]:
+def get_current_version() -> tuple[str, str]:
     """获取当前版本号和配置文件类型。"""
     # 优先查找 pyproject.toml
     if Path("pyproject.toml").exists():
-        with open("pyproject.toml", "r") as f:
+        with open("pyproject.toml") as f:
             data = toml.load(f)
-            
+
         # 检查 [project] 部分
         if "project" in data and "version" in data["project"]:
             return data["project"]["version"], "pyproject.toml"
-            
+
         # 检查 [tool.poetry] 部分
         if "tool" in data and "poetry" in data["tool"] and "version" in data["tool"]["poetry"]:
             return data["tool"]["poetry"]["version"], "pyproject.toml"
-    
+
     # 检查 setup.py
     if Path("setup.py").exists():
-        console.print("[yellow]⚠️  找到 setup.py，但建议使用 pyproject.toml[/yellow]")
+        console.print("[yellow]⚠️  找到 setup.py, 但建议使用 pyproject.toml[/yellow]")
         # 简单的版本提取（实际可能更复杂）
-        with open("setup.py", "r") as f:
+        with open("setup.py") as f:
             content = f.read()
             import re
+
             match = re.search(r'version\s*=\s*["\']([^"\']+)["\']', content)
             if match:
                 return match.group(1), "setup.py"
-    
+
     console.print("[red]❌ 未找到 Python 项目配置文件 (pyproject.toml 或 setup.py)[/red]")
     console.print("[dim]提示：这是一个 Python 版本管理工具，请在 Python 项目中使用[/dim]")
     sys.exit(1)
@@ -76,28 +67,25 @@ def get_current_version() -> Tuple[str, str]:
 def update_version_file(new_version: str, file_type: str) -> None:
     """更新版本文件。"""
     if file_type == "pyproject.toml":
-        with open("pyproject.toml", "r") as f:
+        with open("pyproject.toml") as f:
             data = toml.load(f)
-        
+
         # 更新相应部分的版本
         if "project" in data and "version" in data["project"]:
             data["project"]["version"] = new_version
         elif "tool" in data and "poetry" in data["tool"]:
             data["tool"]["poetry"]["version"] = new_version
-        
+
         with open("pyproject.toml", "w") as f:
             toml.dump(data, f)
-            
+
     elif file_type == "setup.py":
         # 简单的替换（实际可能需要更复杂的处理）
-        with open("setup.py", "r") as f:
+        with open("setup.py") as f:
             content = f.read()
         import re
-        content = re.sub(
-            r'version\s*=\s*["\'][^"\']+["\']',
-            f'version="{new_version}"',
-            content
-        )
+
+        content = re.sub(r'version\s*=\s*["\'][^"\']+["\']', f'version="{new_version}"', content)
         with open("setup.py", "w") as f:
             f.write(content)
 
@@ -122,68 +110,64 @@ def main():
     try:
         console.print(Panel.fit("🔢 版本号管理工具", style="bold blue"))
         console.print()
-        
+
         # 检查当前状态
         current_version, config_file = get_current_version()
         current_branch = get_current_branch()
-        
+
         console.print(f"[cyan]📦 当前版本: {current_version}[/cyan]")
         console.print(f"[cyan]📄 配置文件: {config_file}[/cyan]")
         console.print(f"[cyan]🌿 当前分支: {current_branch}[/cyan]")
         console.print()
-        
+
         # 检查分支
         if current_branch not in ["main", "master"]:
             console.print("[yellow]⚠️  警告: 不在主分支上[/yellow]")
             if not confirm("确定要在非主分支上发布吗？", default=False):
                 console.print("[red]✖ 发布已取消[/red]")
                 sys.exit(0)
-        
+
         # 检查工作区
         if not check_git_status():
             console.print("[red]✖ 发布已取消：工作区有未提交的更改[/red]")
             sys.exit(0)
-    
+
         # 创建版本管理器
         version_manager = VersionManager()
-        
+
         # 解析当前版本
         version_parts = version_manager.parse_version(current_version)
         if not version_parts:
             console.print(f"[red]❌ 无效的版本号格式: {current_version}[/red]")
             sys.exit(1)
-    
+
         # 构建发布类型选项
         choices = ["正式版本 (Production)"]
-        
+
         # Dev 版本只能在当前是 dev 版本或者没有预发布版本时选择
         if not version_parts.prerelease_type or version_parts.prerelease_type == "dev":
             choices.append("Dev 版本")
-        
+
         if not version_parts.prerelease_type or version_parts.prerelease_type in ["dev", "a"]:
             choices.append("Alpha 版本")
-        
+
         if not version_parts.prerelease_type or version_parts.prerelease_type in ["dev", "a", "b"]:
             choices.append("Beta 版本")
-        
+
         if not version_parts.prerelease_type or version_parts.prerelease_type in ["dev", "a", "b", "rc"]:
             choices.append("RC 版本")
-        
+
         # Post 版本只能从正式版本或者已有的 post 版本创建
         if not version_parts.prerelease_type or version_parts.prerelease_type == "post":
             choices.append("Post 版本")
-        
+
         # 选择发布类型
-        release_choice = list_input(
-            message="选择发布类型",
-            choices=choices,
-            default=choices[0]
-        )
-        
+        release_choice = list_input(message="选择发布类型", choices=choices, default=choices[0])
+
         if not release_choice:
             console.print("[red]✖ 发布已取消[/red]")
             sys.exit(0)
-    
+
         # 解析选择
         is_prerelease = "正式版本" not in release_choice
         prerelease_type = None
@@ -198,10 +182,10 @@ def main():
                 prerelease_type = "rc"
             elif "Post" in release_choice:
                 prerelease_type = "post"
-    
+
         # 选择版本号类型
         version_bump = "patch"
-        
+
         if version_parts.prerelease_type:
             # 当前是预发布版本
             if is_prerelease and prerelease_type == version_parts.prerelease_type:
@@ -209,89 +193,76 @@ def main():
             elif is_prerelease:
                 type_names = {"dev": "Dev", "a": "Alpha", "b": "Beta", "rc": "RC", "post": "Post"}
                 console.print(
-                    f"[yellow]当前是 {type_names.get(version_parts.prerelease_type, version_parts.prerelease_type)} 版本，"
-                    f"将切换到 {type_names.get(prerelease_type, prerelease_type)} 版本[/yellow]"
+                    f"[yellow]当前是 {type_names.get(version_parts.prerelease_type or '', version_parts.prerelease_type)} 版本，"
+                    f"将切换到 {type_names.get(prerelease_type or '', prerelease_type)} 版本[/yellow]"
                 )
             else:
                 console.print(f"[yellow]当前是 {version_parts.prerelease_type} 版本，将发布为正式版本[/yellow]")
         else:
             # 需要选择版本递增类型
             major, minor, patch = version_parts.major, version_parts.minor, version_parts.patch
-            
+
             suffix = f"{prerelease_type}0" if is_prerelease else ""
-            
+
             version_choices = [
                 f"Patch (修订号): {current_version} → {major}.{minor}.{patch + 1}{suffix}",
                 f"Minor (次版本号): {current_version} → {major}.{minor + 1}.0{suffix}",
-                f"Major (主版本号): {current_version} → {major + 1}.0.0{suffix}"
+                f"Major (主版本号): {current_version} → {major + 1}.0.0{suffix}",
             ]
-            
-            selected = list_input(
-                message="选择版本号递增类型",
-                choices=version_choices,
-                default=version_choices[0]
-            )
-            
+
+            selected = list_input(message="选择版本号递增类型", choices=version_choices, default=version_choices[0])
+
             if not selected:
                 console.print("[red]✖ 发布已取消[/red]")
                 sys.exit(0)
-            
+
             if "Patch" in selected:
                 version_bump = "patch"
             elif "Minor" in selected:
                 version_bump = "minor"
             elif "Major" in selected:
                 version_bump = "major"
-        
+
         # 计算新版本号
-        new_version = version_manager.get_next_version(
-        current_version,
-        version_bump,
-        is_prerelease,
-        prerelease_type
-        )
+        new_version = version_manager.get_next_version(current_version, version_bump, is_prerelease, prerelease_type)
         tag_name = f"v{new_version}"
-        
+
         # 显示执行计划
         console.print()
         console.print(Panel.fit("📋 执行计划", style="bold blue"))
-        
+
         table = Table(show_header=False, box=None)
         table.add_row("当前版本:", f"{current_version} → {new_version}")
         table.add_row("标签名称:", tag_name)
-        
+
         release_type_name = "正式版本"
         if is_prerelease:
-            type_names = {
-                "a": "Alpha (内部测试)",
-                "b": "Beta (公开测试)",
-                "rc": "RC (候选发布)"
-            }
-            release_type_name = type_names.get(prerelease_type, "预发布版本")
+            type_names = {"a": "Alpha (内部测试)", "b": "Beta (公开测试)", "rc": "RC (候选发布)"}
+            release_type_name = type_names.get(prerelease_type or "", "预发布版本")
         table.add_row("发布类型:", release_type_name)
-        
+
         console.print(table)
         console.print()
-        
+
         console.print("[bold blue]📝 执行步骤:[/bold blue]")
         steps = [
             f"更新版本号到 {new_version}",
-            f"提交版本更新 (commit message: \"chore: release {new_version}\")",
+            f'提交版本更新 (commit message: "chore: release {new_version}")',
             f"创建 Git 标签 {tag_name}",
             "推送提交和标签到远程仓库 (git push --follow-tags)",
-            "如果配置了 CI/CD，将自动执行后续流程"
+            "如果配置了 CI/CD，将自动执行后续流程",
         ]
-        
+
         for i, step in enumerate(steps, 1):
             console.print(f"  {i}. {step}")
-        
-        console.print(f"\n[dim]提交信息预览: \"chore: release {new_version}\"[/dim]")
-        
+
+        console.print(f'\n[dim]提交信息预览: "chore: release {new_version}"[/dim]')
+
         # 确认执行
         if not confirm("确认执行以上步骤？", default=True):
             console.print("[red]✖ 发布已取消[/red]")
             sys.exit(0)
-        
+
         # 执行版本更新流程
         console.print()
         console.print("[bold green]🏃 开始执行版本更新...[/bold green]")
@@ -299,39 +270,39 @@ def main():
         # 1. 更新版本号
         console.print(f"[cyan]📦 更新版本号到 {new_version}...[/cyan]")
         update_version_file(new_version, config_file)
-        
+
         # 2. 提交更改
         console.print("\n[cyan]💾 提交版本更新...[/cyan]")
         if config_file == "pyproject.toml":
             exec_command("git add pyproject.toml")
         elif config_file == "setup.py":
             exec_command("git add setup.py")
-        
+
         exec_command(f'git commit -m "chore: release {new_version}"')
-        
+
         # 3. 创建标签
         console.print(f"\n[cyan]🏷️  创建标签 {tag_name}...[/cyan]")
         exec_command(f'git tag -a {tag_name} -m "Release {new_version}"')
-        
+
         # 4. 推送提交和标签
         if not os.environ.get("BUMP_VERSION_SKIP_PUSH"):
             console.print("\n[cyan]📤 推送提交和标签到远程仓库...[/cyan]")
             exec_command("git push --follow-tags")
-        
+
         console.print()
         console.print("[bold green]✅ 版本更新成功！[/bold green]")
         console.print(f"版本 {new_version} 已创建并推送到远程仓库")
-        
+
         if config_file == "pyproject.toml":
             console.print("\n[bold blue]📦 发布到 PyPI:[/bold blue]")
             console.print("  1. 构建包: uv build")
             console.print("  2. 发布: uv publish")
-        
+
     except Exception as e:
-        console.print(f"\n[red]❌ 版本更新过程中出现错误[/red]")
+        console.print("\n[red]❌ 版本更新过程中出现错误[/red]")
         console.print(str(e))
         sys.exit(1)
-    
+
     except KeyboardInterrupt:
         console.print("\n[yellow]⚠️  用户取消操作[/yellow]")
         sys.exit(0)

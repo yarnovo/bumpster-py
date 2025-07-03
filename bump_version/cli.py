@@ -205,21 +205,21 @@ def main():
         else:
             # 需要选择版本递增类型
             major, minor, patch = version_parts.major, version_parts.minor, version_parts.patch
-        
-        suffix = f"{prerelease_type}0" if is_prerelease else ""
-        
-        version_choices = [
-            f"Patch (修订号): {current_version} → {major}.{minor}.{patch + 1}{suffix}",
-            f"Minor (次版本号): {current_version} → {major}.{minor + 1}.0{suffix}",
-            f"Major (主版本号): {current_version} → {major + 1}.0.0{suffix}"
-        ]
-        
-        selected = list_input(
-            message="选择版本号递增类型",
-            choices=version_choices,
-            default=version_choices[0]
-        )
-        
+            
+            suffix = f"{prerelease_type}0" if is_prerelease else ""
+            
+            version_choices = [
+                f"Patch (修订号): {current_version} → {major}.{minor}.{patch + 1}{suffix}",
+                f"Minor (次版本号): {current_version} → {major}.{minor + 1}.0{suffix}",
+                f"Major (主版本号): {current_version} → {major + 1}.0.0{suffix}"
+            ]
+            
+            selected = list_input(
+                message="选择版本号递增类型",
+                choices=version_choices,
+                default=version_choices[0]
+            )
+            
             if not selected:
                 console.print("[red]✖ 发布已取消[/red]")
                 sys.exit(0)

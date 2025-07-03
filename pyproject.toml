@@ -1,6 +1,6 @@
 [project]
 name = "bump-version"
-version = "0.1.0dev0"
+version = "0.1.0dev1"
 description = "A CLI tool for semantic version management"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -42,9 +42,6 @@ reportUnknownMemberType = false
 reportUnknownArgumentType = false
 reportMissingParameterType = false
 
-[tool.hatch.build]
-include = [ "bump_version/**/*.py", "bump_version/py.typed",]
-
 [tool.ruff.lint]
 select = [ "E", "W", "F", "I", "B", "UP", "RUF",]
 ignore = [ "E501", "RUF001", "RUF002", "RUF003",]
@@ -52,3 +49,6 @@ ignore = [ "E501", "RUF001", "RUF002", "RUF003",]
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+
+[tool.hatch.build]
+include = [ "bump_version/**/*.py", "bump_version/py.typed",]

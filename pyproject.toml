@@ -1,6 +1,6 @@
 [project]
 name = "bump-version"
-version = "0.1.0dev1"
+version = "0.1.0dev2"
 description = "A CLI tool for semantic version management"
 readme = "README.md"
 requires-python = ">=3.12"

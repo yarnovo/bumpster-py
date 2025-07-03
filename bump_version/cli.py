@@ -7,12 +7,13 @@ import sys
 from pathlib import Path
 
 import click
-import toml
+import tomlkit
 from inquirer import confirm, list_input
 from packaging.version import InvalidVersion, Version
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
+from tomlkit import items
 
 from ._version import get_package_version
 from .version_manager import VersionManager
@@ -58,15 +59,19 @@ def get_current_version() -> tuple[str, str]:
     # 优先查找 pyproject.toml
     if Path("pyproject.toml").exists():
         with open("pyproject.toml") as f:
-            data = toml.load(f)
+            doc = tomlkit.load(f)
 
         # 检查 [project] 部分
-        if "project" in data and "version" in data["project"]:
-            return data["project"]["version"], "pyproject.toml"
+        project = doc.get("project")
+        if isinstance(project, dict | items.Table) and "version" in project:
+            return str(project["version"]), "pyproject.toml"
 
         # 检查 [tool.poetry] 部分
-        if "tool" in data and "poetry" in data["tool"] and "version" in data["tool"]["poetry"]:
-            return data["tool"]["poetry"]["version"], "pyproject.toml"
+        tool = doc.get("tool")
+        if isinstance(tool, dict | items.Table):
+            poetry = tool.get("poetry")
+            if isinstance(poetry, dict | items.Table) and "version" in poetry:
+                return str(poetry["version"]), "pyproject.toml"
 
     # 检查 setup.py
     if Path("setup.py").exists():
@@ -89,16 +94,22 @@ def update_version_file(new_version: str, file_type: str) -> None:
     """更新版本文件。"""
     if file_type == "pyproject.toml":
         with open("pyproject.toml") as f:
-            data = toml.load(f)
+            doc = tomlkit.load(f)
 
         # 更新相应部分的版本
-        if "project" in data and "version" in data["project"]:
-            data["project"]["version"] = new_version
-        elif "tool" in data and "poetry" in data["tool"]:
-            data["tool"]["poetry"]["version"] = new_version
+        project = doc.get("project")
+        if isinstance(project, dict | items.Table) and "version" in project:
+            project["version"] = new_version
+        else:
+            tool = doc.get("tool")
+            if isinstance(tool, dict | items.Table):
+                poetry = tool.get("poetry")
+                if isinstance(poetry, dict | items.Table) and "version" in poetry:
+                    poetry["version"] = new_version
 
+        # 使用 tomlkit.dumps 保留原始格式
         with open("pyproject.toml", "w") as f:
-            toml.dump(data, f)
+            f.write(tomlkit.dumps(doc))
 
     elif file_type == "setup.py":
         # 简单的替换（实际可能需要更复杂的处理）

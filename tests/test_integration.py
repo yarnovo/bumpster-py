@@ -5,13 +5,27 @@ import sys
 from pathlib import Path
 
 import pytest
-import toml
+import tomlkit
+from tomlkit import items
 
 # 添加项目根目录到 Python 路径
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from bump_version.cli import run_version_bump
 from tests.conftest import get_git_tags, get_last_commit_message, get_version_from_pyproject
+
+
+def update_pyproject_version(config_path: Path, new_version: str) -> None:
+    """更新 pyproject.toml 中的版本号。"""
+    with open(config_path) as f:
+        doc = tomlkit.load(f)
+
+    project = doc.get("project")
+    if isinstance(project, dict | items.Table):
+        project["version"] = new_version
+
+    with open(config_path, "w") as f:
+        f.write(tomlkit.dumps(doc))
 
 
 class TestVersionBumping:
@@ -138,11 +152,7 @@ class TestPrereleaseVersions:
 
         # 先设置为 alpha 版本
         config_path = project_path / "pyproject.toml"
-        with open(config_path) as f:
-            data = toml.load(f)
-        data["project"]["version"] = "1.0.0a0"
-        with open(config_path, "w") as f:
-            toml.dump(data, f)
+        update_pyproject_version(config_path, "1.0.0a0")
 
         # 提交更改
         subprocess.run(["git", "add", "."], cwd=project_path, check=True)
@@ -167,11 +177,7 @@ class TestPrereleaseVersions:
 
         # 设置为 alpha 版本
         config_path = project_path / "pyproject.toml"
-        with open(config_path) as f:
-            data = toml.load(f)
-        data["project"]["version"] = "1.0.0a3"
-        with open(config_path, "w") as f:
-            toml.dump(data, f)
+        update_pyproject_version(config_path, "1.0.0a3")
 
         subprocess.run(["git", "add", "."], cwd=project_path, check=True)
         subprocess.run(["git", "commit", "-m", "Update to alpha.3"], cwd=project_path, check=True)
@@ -195,11 +201,7 @@ class TestPrereleaseVersions:
 
         # 设置为 beta 版本
         config_path = project_path / "pyproject.toml"
-        with open(config_path) as f:
-            data = toml.load(f)
-        data["project"]["version"] = "1.0.0b2"
-        with open(config_path, "w") as f:
-            toml.dump(data, f)
+        update_pyproject_version(config_path, "1.0.0b2")
 
         subprocess.run(["git", "add", "."], cwd=project_path, check=True)
         subprocess.run(["git", "commit", "-m", "Update to beta.2"], cwd=project_path, check=True)
@@ -223,11 +225,7 @@ class TestPrereleaseVersions:
 
         # 设置为 rc 版本
         config_path = project_path / "pyproject.toml"
-        with open(config_path) as f:
-            data = toml.load(f)
-        data["project"]["version"] = "1.0.0rc1"
-        with open(config_path, "w") as f:
-            toml.dump(data, f)
+        update_pyproject_version(config_path, "1.0.0rc1")
 
         subprocess.run(["git", "add", "."], cwd=project_path, check=True)
         subprocess.run(["git", "commit", "-m", "Update to rc.1"], cwd=project_path, check=True)
@@ -273,11 +271,7 @@ class TestDevAndPostVersions:
         project_path = project_with_pyproject["path"]
 
         # 先设置为 dev 版本
-        with open(project_path / "pyproject.toml") as f:
-            data = toml.load(f)
-        data["project"]["version"] = "1.0.0.dev0"
-        with open(project_path / "pyproject.toml", "w") as f:
-            toml.dump(data, f)
+        update_pyproject_version(project_path / "pyproject.toml", "1.0.0.dev0")
 
         # 提交更改
         subprocess.run(["git", "add", "."], cwd=project_path, check=True)
@@ -318,11 +312,7 @@ class TestDevAndPostVersions:
         project_path = project_with_pyproject["path"]
 
         # 先设置为 post 版本
-        with open(project_path / "pyproject.toml") as f:
-            data = toml.load(f)
-        data["project"]["version"] = "1.0.0.post0"
-        with open(project_path / "pyproject.toml", "w") as f:
-            toml.dump(data, f)
+        update_pyproject_version(project_path / "pyproject.toml", "1.0.0.post0")
 
         # 提交更改
         subprocess.run(["git", "add", "."], cwd=project_path, check=True)

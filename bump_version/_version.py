@@ -2,7 +2,8 @@
 
 from pathlib import Path
 
-import toml
+import tomlkit
+from tomlkit import items
 
 
 def get_package_version() -> str:
@@ -14,8 +15,15 @@ def get_package_version() -> str:
 
         if pyproject_path.exists():
             with open(pyproject_path) as f:
-                data = toml.load(f)
-            return data.get("project", {}).get("version", "unknown")
+                doc = tomlkit.load(f)
+
+            project = doc.get("project")
+            if isinstance(project, dict | items.Table):
+                version = project.get("version")
+                if version:
+                    return str(version)
+
+            return "unknown"
 
         # 如果找不到，返回默认值
         return "unknown"

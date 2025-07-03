@@ -4,7 +4,7 @@ version = "0.1.1"
 description = "A CLI tool for semantic version management"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = [ "click>=8.1.0", "rich>=13.0.0", "inquirer>=3.1.0", "toml>=0.10.2", "packaging>=23.0",]
+dependencies = [ "click>=8.1.0", "rich>=13.0.0", "inquirer>=3.1.0", "tomlkit>=0.12.0", "packaging>=23.0",]
 [[project.authors]]
 name = "AI App Base"
 

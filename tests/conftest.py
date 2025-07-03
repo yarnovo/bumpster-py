@@ -8,7 +8,8 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-import toml
+import tomlkit
+from tomlkit import items
 
 
 @pytest.fixture
@@ -42,7 +43,7 @@ def project_with_pyproject(git_repo: Path) -> Generator[dict[str, Any], None, No
 
     pyproject_path = git_repo / "pyproject.toml"
     with open(pyproject_path, "w") as f:
-        toml.dump(pyproject_data, f)
+        f.write(tomlkit.dumps(pyproject_data))
 
     # 创建初始提交
     subprocess.run(["git", "add", "."], cwd=git_repo, check=True)
@@ -122,12 +123,17 @@ def mock_user_input(monkeypatch):
 def get_version_from_pyproject(path: Path) -> str:
     """从 pyproject.toml 获取版本号。"""
     with open(path / "pyproject.toml") as f:
-        data = toml.load(f)
+        doc = tomlkit.load(f)
 
-    if "project" in data and "version" in data["project"]:
-        return data["project"]["version"]
-    elif "tool" in data and "poetry" in data["tool"] and "version" in data["tool"]["poetry"]:
-        return data["tool"]["poetry"]["version"]
+    project = doc.get("project")
+    if isinstance(project, dict | items.Table) and "version" in project:
+        return str(project["version"])
+
+    tool = doc.get("tool")
+    if isinstance(tool, dict | items.Table):
+        poetry = tool.get("poetry")
+        if isinstance(poetry, dict | items.Table) and "version" in poetry:
+            return str(poetry["version"])
 
     raise ValueError("No version found in pyproject.toml")
 

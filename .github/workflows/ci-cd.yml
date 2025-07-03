@@ -58,15 +58,13 @@ jobs:
             TAG="${BASH_REMATCH[1]}"
           fi
           
-          # 使用 grep 验证 PEP 440 版本号格式
-          # 支持: 1.0.0, 1.0.0a0, 1.0.0b0, 1.0.0rc0, 1.0.0.dev0, 1.0.0dev0, 1.0.0.post0, 1.0.0post0
-          if ! echo "$TAG" | grep -qE '^[0-9]+\.[0-9]+(\.[0-9]+)?(a[0-9]+|b[0-9]+|rc[0-9]+|\.dev[0-9]+|dev[0-9]+|\.post[0-9]+|post[0-9]+)?$'; then
+          # 使用 Python packaging 库验证 PEP 440 版本号格式
+          if python -c "from packaging.version import Version, InvalidVersion; import sys; Version('$TAG'); print(f'✅ Version $TAG is PEP 440 compliant'); sys.exit(0)" 2>/dev/null; then
+            echo "version=$TAG" >> $GITHUB_OUTPUT
+          else
             echo "❌ Version '$TAG' is not PEP 440 compliant"
             exit 1
           fi
-          
-          echo "✅ Version '$TAG' is PEP 440 compliant"
-          echo "version=$TAG" >> $GITHUB_OUTPUT
         else
           echo "is_tag=false" >> $GITHUB_OUTPUT
         fi

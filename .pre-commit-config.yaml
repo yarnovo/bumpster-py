@@ -29,7 +29,7 @@ repos:
         pass_filenames: false
         always_run: true
 
-      # Pytest - 测试（仅在 push 时）
+      # Pytest - 测试
       - id: pytest
         name: pytest
         entry: bash -c 'PATH="$HOME/.local/bin:$PATH" uv run pytest tests/ -v'

@@ -59,10 +59,10 @@ jobs:
           fi
           
           # 使用 Python packaging 库验证 PEP 440 版本号格式
-          if python -c "from packaging.version import Version, InvalidVersion; import sys; Version('$TAG'); print(f'✅ Version $TAG is PEP 440 compliant'); sys.exit(0)" 2>/dev/null; then
+          # 使用 uv run 确保 packaging 库可用
+          if uv run python -c "from packaging.version import Version, InvalidVersion; import sys; try: Version('$TAG'); print(f'✅ Version $TAG is PEP 440 compliant'); sys.exit(0); except InvalidVersion: print(f'❌ Version $TAG is not PEP 440 compliant'); sys.exit(1)"; then
             echo "version=$TAG" >> $GITHUB_OUTPUT
           else
-            echo "❌ Version '$TAG' is not PEP 440 compliant"
             exit 1
           fi
         else

@@ -100,7 +100,10 @@ class VersionManager:
                 if prerelease_type == version_parts.prerelease_type:
                     # 相同类型：递增版本号
                     new_num = (version_parts.prerelease_num or 0) + 1
-                    return f"{major}.{minor}.{patch}{prerelease_type}{new_num}"
+                    if prerelease_type in ["dev", "post"]:
+                        return f"{major}.{minor}.{patch}.{prerelease_type}{new_num}"
+                    else:
+                        return f"{major}.{minor}.{patch}{prerelease_type}{new_num}"
                 else:
                     # 不同类型：检查升级路径
                     # PEP 440 顺序: dev < a < b < rc < 正式版 < post
@@ -111,7 +114,7 @@ class VersionManager:
                         # 从 post 版本只能继续 post 或者升级到新的主/次/修订版本
                         if prerelease_type == "post":
                             new_num = (version_parts.prerelease_num or 0) + 1
-                            return f"{major}.{minor}.{patch}post{new_num}"
+                            return f"{major}.{minor}.{patch}.post{new_num}"
                         else:
                             # 不允许从 post 回到其他预发布版本
                             raise ValueError(f"不能从 post 版本回到 {prerelease_type} 版本")
@@ -128,10 +131,16 @@ class VersionManager:
 
                     if new_idx > current_idx:
                         # 升级预发布类型
-                        return f"{major}.{minor}.{patch}{prerelease_type}0"
+                        if prerelease_type in ["dev", "post"]:
+                            return f"{major}.{minor}.{patch}.{prerelease_type}0"
+                        else:
+                            return f"{major}.{minor}.{patch}{prerelease_type}0"
                     else:
                         # 降级警告，但仍然允许
-                        return f"{major}.{minor}.{patch}{prerelease_type}0"
+                        if prerelease_type in ["dev", "post"]:
+                            return f"{major}.{minor}.{patch}.{prerelease_type}0"
+                        else:
+                            return f"{major}.{minor}.{patch}{prerelease_type}0"
             else:
                 # 预发布 -> 正式版：去掉预发布后缀
                 return f"{major}.{minor}.{patch}"
@@ -139,7 +148,7 @@ class VersionManager:
             # 当前是正式版本
             if is_prerelease and prerelease_type == "post":
                 # 正式版本可以直接升级到 post 版本
-                return f"{major}.{minor}.{patch}post0"
+                return f"{major}.{minor}.{patch}.post0"
 
             if release_type == "major":
                 major += 1
@@ -154,6 +163,9 @@ class VersionManager:
             new_version = f"{major}.{minor}.{patch}"
 
             if is_prerelease and prerelease_type and prerelease_type != "post":
-                new_version += f"{prerelease_type}0"
+                if prerelease_type == "dev":
+                    new_version += f".{prerelease_type}0"
+                else:
+                    new_version += f"{prerelease_type}0"
 
             return new_version

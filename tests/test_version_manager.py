@@ -182,26 +182,26 @@ class TestVersionBumping:
     def test_dev_version_increment(self):
         """测试递增 dev 版本号。"""
         manager = VersionManager()
-        result = manager.get_next_version("1.0.0dev0", "patch", True, "dev")
-        assert result == "1.0.0dev1"
+        result = manager.get_next_version("1.0.0.dev0", "patch", True, "dev")
+        assert result == "1.0.0.dev1"
 
     def test_upgrade_dev_to_alpha(self):
         """测试从 dev 升级到 alpha。"""
         manager = VersionManager()
-        result = manager.get_next_version("1.0.0dev3", "patch", True, "a")
+        result = manager.get_next_version("1.0.0.dev3", "patch", True, "a")
         assert result == "1.0.0a0"
 
     def test_create_post_from_production(self):
         """测试从正式版本创建 post 版本。"""
         manager = VersionManager()
         result = manager.get_next_version("1.0.0", "patch", True, "post")
-        assert result == "1.0.0post0"
+        assert result == "1.0.0.post0"
 
     def test_increment_post_version(self):
         """测试递增 post 版本号。"""
         manager = VersionManager()
-        result = manager.get_next_version("1.0.0post0", "patch", True, "post")
-        assert result == "1.0.0post1"
+        result = manager.get_next_version("1.0.0.post0", "patch", True, "post")
+        assert result == "1.0.0.post1"
 
     def test_cannot_upgrade_prerelease_to_post(self):
         """测试不能从预发布版本直接升级到 post。"""
@@ -213,7 +213,7 @@ class TestVersionBumping:
         """测试不能从 post 版本降级到预发布版本。"""
         manager = VersionManager()
         with pytest.raises(ValueError, match="不能从 post 版本回到"):
-            manager.get_next_version("1.0.0post1", "patch", True, "a")
+            manager.get_next_version("1.0.0.post1", "patch", True, "a")
 
 
 class TestEdgeCases:
@@ -266,11 +266,11 @@ class TestPEP440Compliance:
             ("1.0.0a0", "patch", True, "b"),
             ("1.0.0b0", "patch", True, "rc"),
             ("1.0.0rc0", "patch", False, None),
-            ("1.0.0dev0", "patch", True, "dev"),
-            ("1.0.0dev0", "patch", True, "a"),
+            ("1.0.0.dev0", "patch", True, "dev"),
+            ("1.0.0.dev0", "patch", True, "a"),
             ("2.5.3", "major", True, "a"),
             ("0.1.0", "minor", True, "b"),
-            ("1.0.0post0", "patch", True, "post"),
+            ("1.0.0.post0", "patch", True, "post"),
         ]
 
         for current, release_type, is_prerelease, prerelease_type in test_cases:
@@ -315,7 +315,10 @@ class TestPEP440Compliance:
                 # 重构版本号
                 reconstructed = f"{parsed.major}.{parsed.minor}.{parsed.patch}"
                 if parsed.prerelease_type:
-                    reconstructed += f"{parsed.prerelease_type}{parsed.prerelease_num}"
+                    if parsed.prerelease_type in ["dev", "post"]:
+                        reconstructed += f".{parsed.prerelease_type}{parsed.prerelease_num}"
+                    else:
+                        reconstructed += f"{parsed.prerelease_type}{parsed.prerelease_num}"
 
                 # 验证重构的版本号符合 PEP 440
                 try:

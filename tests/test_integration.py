@@ -266,7 +266,7 @@ class TestDevAndPostVersions:
             pass
 
         new_version = get_version_from_pyproject(project_path)
-        assert new_version == "1.0.1dev0"
+        assert new_version == "1.0.1.dev0"
 
     def test_increment_dev_version(self, project_with_pyproject, mock_user_input, monkeypatch):
         """测试递增 dev 版本。"""
@@ -275,7 +275,7 @@ class TestDevAndPostVersions:
         # 先设置为 dev 版本
         with open(project_path / "pyproject.toml") as f:
             data = toml.load(f)
-        data["project"]["version"] = "1.0.0dev0"
+        data["project"]["version"] = "1.0.0.dev0"
         with open(project_path / "pyproject.toml", "w") as f:
             toml.dump(data, f)
 
@@ -294,7 +294,7 @@ class TestDevAndPostVersions:
             pass
 
         new_version = get_version_from_pyproject(project_path)
-        assert new_version == "1.0.0dev1"
+        assert new_version == "1.0.0.dev1"
 
     def test_create_post_version_from_production(self, project_with_pyproject, mock_user_input, monkeypatch):
         """测试从正式版本创建 post 版本。"""
@@ -311,7 +311,7 @@ class TestDevAndPostVersions:
             pass
 
         new_version = get_version_from_pyproject(project_path)
-        assert new_version == "1.0.0post0"
+        assert new_version == "1.0.0.post0"
 
     def test_increment_post_version(self, project_with_pyproject, mock_user_input, monkeypatch):
         """测试递增 post 版本。"""
@@ -320,7 +320,7 @@ class TestDevAndPostVersions:
         # 先设置为 post 版本
         with open(project_path / "pyproject.toml") as f:
             data = toml.load(f)
-        data["project"]["version"] = "1.0.0post0"
+        data["project"]["version"] = "1.0.0.post0"
         with open(project_path / "pyproject.toml", "w") as f:
             toml.dump(data, f)
 
@@ -339,7 +339,7 @@ class TestDevAndPostVersions:
             pass
 
         new_version = get_version_from_pyproject(project_path)
-        assert new_version == "1.0.0post1"
+        assert new_version == "1.0.0.post1"
 
 
 class TestErrorHandling:

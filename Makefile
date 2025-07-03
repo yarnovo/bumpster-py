@@ -35,11 +35,11 @@ sync:
 # 全局开发安装（类似 npm link）
 dev-install-global:
 	uv tool install -e .
-	@echo "✅ 已全局安装开发版本，可以在任何地方使用 'bump-version-py' 或 'bvp' 命令"
+	@echo "✅ 已全局安装开发版本，可以在任何地方使用 'bump-version' 或 'bvp' 命令"
 
 # 卸载全局开发版本
 dev-uninstall-global:
-	uv tool uninstall bump-version
+	uv tool uninstall ai-app-base-bump-version
 	@echo "✅ 已卸载全局开发版本"
 
 # 运行测试

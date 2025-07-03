@@ -19,7 +19,7 @@ dev = [ "pytest>=7.0.0", "pytest-cov>=4.0.0", "pyright>=1.1.0", "ruff>=0.1.0", "
 text = "ISC"
 
 [project.scripts]
-bump-version = "bump_version.cli:main"
+bump-version-py = "bump_version.cli:main"
 bvp = "bump_version.cli:main"
 
 [project.urls]

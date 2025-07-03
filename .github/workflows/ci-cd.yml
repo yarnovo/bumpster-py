@@ -58,8 +58,9 @@ jobs:
             TAG="${BASH_REMATCH[1]}"
           fi
           
-          # 使用正则表达式验证 PEP 440 版本号格式
-          if [[ ! "$TAG" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?(\.post[0-9]+|\.dev[0-9]+|a[0-9]+|b[0-9]+|rc[0-9]+)?$ ]]; then
+          # 使用 grep 验证 PEP 440 版本号格式
+          # 支持: 1.0.0, 1.0.0a0, 1.0.0b0, 1.0.0rc0, 1.0.0.dev0, 1.0.0dev0, 1.0.0.post0, 1.0.0post0
+          if ! echo "$TAG" | grep -qE '^[0-9]+\.[0-9]+(\.[0-9]+)?(a[0-9]+|b[0-9]+|rc[0-9]+|\.dev[0-9]+|dev[0-9]+|\.post[0-9]+|post[0-9]+)?$'; then
             echo "❌ Version '$TAG' is not PEP 440 compliant"
             exit 1
           fi

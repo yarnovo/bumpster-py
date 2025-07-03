@@ -1,8 +1,9 @@
 """版本管理核心功能模块。"""
 
-import re
 from dataclasses import dataclass
 from typing import Literal
+
+from packaging.version import InvalidVersion, Version
 
 ReleaseType = Literal["major", "minor", "patch"]
 PrereleaseType = Literal["a", "b", "rc", "dev", "post"]  # Python 风格的预发布类型
@@ -17,6 +18,8 @@ class VersionParts:
     patch: int
     prerelease_type: PrereleaseType | None = None
     prerelease_num: int | None = None
+    dev: int | None = None  # 开发版本号
+    post: int | None = None  # 后发布版本号
     local: str | None = None  # Python 支持本地版本标识符
 
 
@@ -25,57 +28,53 @@ class VersionManager:
 
     def parse_version(self, version: str) -> VersionParts | None:
         """解析版本号，支持 PEP 440 格式。"""
-        # 支持多种格式：
-        # 1.0.0
-        # 1.0.0a0, 1.0.0.alpha0
-        # 1.0.0b1, 1.0.0.beta1
-        # 1.0.0rc2, 1.0.0.rc2
-        # 1.0.0.dev3, 1.0.0dev3
-        # 1.0.0.post4, 1.0.0post4
-        # 1.0.0+local.version
-
         # 移除可能的 'v' 前缀
         version = version.lstrip("v")
 
-        # 正则表达式匹配 PEP 440 格式
-        pattern = r"^(\d+)\.(\d+)\.(\d+)"  # 主版本号
-        pattern += r"(?:"  # 预发布版本（可选）
-        pattern += r"(?:\.)?(a|alpha|b|beta|rc|dev|post)(?:\.)?(\d+)"
-        pattern += r"|"
-        pattern += r"(a|b|rc|dev|post)(\d+)"  # 紧凑格式
-        pattern += r")?"
-        pattern += r"(?:\+([a-zA-Z0-9.]+))?$"  # 本地版本（可选）
-
-        match = re.match(pattern, version)
-        if not match:
+        try:
+            pv = Version(version)
+        except InvalidVersion:
             return None
 
-        groups = match.groups()
-        major = int(groups[0])
-        minor = int(groups[1])
-        patch = int(groups[2])
+        # 提取主版本号
+        if len(pv.release) >= 3:
+            major, minor, patch = pv.release[:3]
+        else:
+            # 处理版本号不完整的情况（如 1.0 -> 1.0.0）
+            release = [*list(pv.release), 0, 0, 0]
+            major, minor, patch = release[:3]
 
-        # 解析预发布类型
+        # 统一处理预发布类型和版本号
         prerelease_type = None
         prerelease_num = None
+        dev_num = None
+        post_num = None
 
-        if groups[3]:  # 格式如 1.0.0.alpha0
-            type_map = {"alpha": "a", "beta": "b", "rc": "rc", "dev": "dev", "post": "post", "a": "a", "b": "b"}
-            prerelease_type = type_map.get(groups[3])
-            prerelease_num = int(groups[4]) if groups[4] else 0
-        elif groups[5]:  # 格式如 1.0.0a0
-            prerelease_type = groups[5]
-            prerelease_num = int(groups[6]) if groups[6] else 0
-
-        local = groups[7] if len(groups) > 7 else None
+        # 优先级：dev < pre < 正式版 < post
+        if pv.dev is not None:
+            # dev 版本
+            prerelease_type = "dev"
+            prerelease_num = pv.dev
+            dev_num = pv.dev
+        elif pv.pre:
+            # alpha, beta, rc 版本
+            prerelease_type = pv.pre[0]  # 'a', 'b', 'rc'
+            prerelease_num = pv.pre[1]
+        elif pv.post is not None:
+            # post 版本
+            prerelease_type = "post"
+            prerelease_num = pv.post
+            post_num = pv.post
 
         return VersionParts(
             major=major,
             minor=minor,
             patch=patch,
-            prerelease_type=prerelease_type if prerelease_type in {"a", "b", "rc", "dev", "post"} else None,  # type: ignore
+            prerelease_type=prerelease_type,  # type: ignore
             prerelease_num=prerelease_num,
-            local=local,
+            dev=dev_num,
+            post=post_num,
+            local=pv.local,
         )
 
     def get_next_version(

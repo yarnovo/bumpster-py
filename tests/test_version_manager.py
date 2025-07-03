@@ -111,8 +111,8 @@ class TestVersionParsing:
         manager = VersionManager()
 
         assert manager.parse_version("invalid") is None
-        assert manager.parse_version("1.2") is None
-        assert manager.parse_version("1.2.3.4") is None
+        assert manager.parse_version("not-a-version") is None
+        assert manager.parse_version("") is None
 
 
 class TestVersionBumping:

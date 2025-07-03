@@ -1,20 +1,22 @@
 [project]
 name = "bump-version"
-version = "0.0.0"
+version = "0.1.0dev0"
 description = "A CLI tool for semantic version management"
 readme = "README.md"
 requires-python = ">=3.12"
-license = {text = "ISC"}
-authors = [
-    {name = "AI App Base"},
-]
-dependencies = [
-    "click>=8.1.0",
-    "rich>=13.0.0",
-    "inquirer>=3.1.0",
-    "toml>=0.10.2",
-    "packaging>=23.0",
-]
+dependencies = [ "click>=8.1.0", "rich>=13.0.0", "inquirer>=3.1.0", "toml>=0.10.2", "packaging>=23.0",]
+[[project.authors]]
+name = "AI App Base"
+
+[build-system]
+requires = [ "hatchling",]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [ "pytest>=7.0.0", "pytest-cov>=4.0.0", "pyright>=1.1.0", "ruff>=0.1.0", "pre-commit>=3.5.0",]
+
+[project.license]
+text = "ISC"
 
 [project.scripts]
 bump-version-py = "bump_version.cli:main"
@@ -25,49 +27,9 @@ Homepage = "https://github.com/ai-app-base/bump-version-py"
 Repository = "https://github.com/ai-app-base/bump-version-py.git"
 Issues = "https://github.com/ai-app-base/bump-version-py/issues"
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.hatch.build]
-include = [
-    "bump_version/**/*.py",
-    "bump_version/py.typed",
-]
-
-[dependency-groups]
-dev = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
-    "pyright>=1.1.0",
-    "ruff>=0.1.0",
-    "pre-commit>=3.5.0",
-]
-
 [tool.ruff]
 target-version = "py312"
 line-length = 120
-
-[tool.ruff.lint]
-select = [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes
-    "I",   # isort
-    "B",   # flake8-bugbear
-    "UP",  # pyupgrade
-    "RUF", # ruff specific rules
-]
-ignore = [
-    "E501",  # line too long (handled by formatter)
-    "RUF001", # ambiguous unicode character (allow Chinese fullwidth chars)
-    "RUF002", # ambiguous unicode character in docstring
-    "RUF003", # ambiguous unicode character in comment
-]
-
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
 
 [tool.pyright]
 pythonVersion = "3.12"
@@ -79,3 +41,14 @@ reportUnknownVariableType = false
 reportUnknownMemberType = false
 reportUnknownArgumentType = false
 reportMissingParameterType = false
+
+[tool.hatch.build]
+include = [ "bump_version/**/*.py", "bump_version/py.typed",]
+
+[tool.ruff.lint]
+select = [ "E", "W", "F", "I", "B", "UP", "RUF",]
+ignore = [ "E501", "RUF001", "RUF002", "RUF003",]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

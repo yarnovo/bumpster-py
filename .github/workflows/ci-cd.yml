@@ -58,8 +58,8 @@ jobs:
             TAG="${BASH_REMATCH[1]}"
           fi
           
-          # 使用包内的验证模块验证 PEP 440 版本号格式
-          if uv run python -m bump_version.validate_version "$TAG"; then
+          # 使用包内的验证功能验证 PEP 440 版本号格式
+          if uv run python -m bump_version.cli validate "$TAG"; then
             echo "version=$TAG" >> $GITHUB_OUTPUT
           else
             exit 1

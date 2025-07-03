@@ -6,15 +6,36 @@ import subprocess
 import sys
 from pathlib import Path
 
+import click
 import toml
 from inquirer import confirm, list_input
+from packaging.version import InvalidVersion, Version
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
+from ._version import get_package_version
 from .version_manager import VersionManager
 
 console = Console()
+
+
+def validate_version(version_string: str) -> bool:
+    """验证版本号是否符合 PEP 440 规范
+
+    Args:
+        version_string: 要验证的版本号字符串
+
+    Returns:
+        bool: 如果版本号符合 PEP 440 规范返回 True，否则返回 False
+    """
+    try:
+        Version(version_string)
+        click.echo(f"✅ Version {version_string} is PEP 440 compliant")
+        return True
+    except InvalidVersion:
+        click.echo(f"❌ Version '{version_string}' is not PEP 440 compliant")
+        return False
 
 
 def exec_command(command: str, silent: bool = False) -> str:
@@ -105,8 +126,8 @@ def check_git_status() -> bool:
     return True
 
 
-def main():
-    """主函数。"""
+def run_version_bump():
+    """执行版本升级的核心逻辑。"""
     try:
         console.print(Panel.fit("🔢 版本号管理工具", style="bold blue"))
         console.print()
@@ -314,6 +335,86 @@ def main():
     except KeyboardInterrupt:
         console.print("\n[yellow]⚠️  用户取消操作[/yellow]")
         sys.exit(0)
+
+
+@click.group(invoke_without_command=True)
+@click.pass_context
+@click.version_option(version=get_package_version(), prog_name="bump-version-py")
+def main(ctx):
+    """Python 项目版本号管理工具 - 自动更新版本号并创建 Git 标签
+
+    \b
+    使用方法:
+      bump-version-py              运行交互式版本管理（默认）
+      bump-version-py validate      验证版本号
+      bvp                          简写命令
+
+    \b
+    功能特性:
+      • 支持 PEP 440 版本规范
+      • 支持正式版本和预发布版本（alpha/beta/rc/dev/post）
+      • 自动更新 pyproject.toml 或 setup.py
+      • 自动创建 Git 提交和标签
+      • 版本号格式验证
+      • 安全检查（分支和工作区状态）
+
+    \b
+    示例:
+      bump-version-py                     # 交互式版本管理
+      bump-version-py validate 1.0.0      # 验证版本号
+      bvp validate 1.0.0a0               # 验证 Alpha 版本
+
+    \b
+    版本格式:
+      1.0.0       正式版本
+      1.0.0a0     Alpha 版本
+      1.0.0b0     Beta 版本
+      1.0.0rc0    Release Candidate
+      1.0.0.dev0  开发版本
+      1.0.0.post0 后发布版本
+
+    \b
+    环境变量:
+      BUMP_VERSION_SKIP_PUSH  设置后跳过 git push
+
+    更多信息请访问: https://github.com/ai-app-base/bump-version-py
+    """
+    # 如果没有子命令，执行默认的版本升级
+    if ctx.invoked_subcommand is None:
+        run_version_bump()
+
+
+@main.command()
+@click.argument("version")
+def validate(version):
+    """验证版本号是否符合 PEP 440 规范
+
+    \b
+    示例:
+      bump-version-py validate 1.0.0      ✅ 有效版本
+      bump-version-py validate v1.0.0     ✅ 有效版本（自动处理 v 前缀）
+      bump-version-py validate 1.0        ✅ 有效版本
+      bump-version-py validate 1.0.0a0    ✅ 有效的 Alpha 版本
+      bump-version-py validate invalid    ❌ 无效版本
+
+    \b
+    退出码:
+      0  版本号有效
+      1  版本号无效
+
+    \b
+    在 CI/CD 中使用:
+      if bump-version-py validate "$VERSION"; then
+        echo "Version is valid"
+      else
+        echo "Version is invalid"
+        exit 1
+      fi
+    """
+    if validate_version(version):
+        sys.exit(0)
+    else:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

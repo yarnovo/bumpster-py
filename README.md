@@ -13,7 +13,7 @@
 - ✅ 支持预发布版本（alpha、beta、rc、dev、post）
 - ✅ 自动 Git 集成（提交、标签、推送）
 - ✅ 交互式命令行界面
-- ✅ 版本号验证工具
+- ✅ 内置版本号验证功能
 - ✅ 安全检查（分支、工作区状态）
 
 ## 安装
@@ -60,14 +60,13 @@ bvp
 
 ### 版本验证
 
-验证版本号是否符合 PEP 440 规范：
+使用 `validate` 子命令验证版本号是否符合 PEP 440 规范：
 
 ```bash
-# 完整命令
-validate-version-py 1.0.0
-
-# 简写命令
-vvp 1.0.0
+# 验证版本号
+bump-version-py validate 1.0.0
+bump-version-py validate 1.0.0a0
+bvp validate 2.0.0.dev1
 
 # 输出示例
 ✅ Version 1.0.0 is PEP 440 compliant  # 退出码 0
@@ -78,7 +77,7 @@ vvp 1.0.0
 
 ```bash
 # 在 shell 脚本中
-if validate-version-py "$VERSION"; then
+if bump-version-py validate "$VERSION"; then
   echo "版本号有效"
 else
   echo "版本号无效"
@@ -86,7 +85,7 @@ else
 fi
 
 # 或使用 Python 模块
-python -m bump_version.validate_version 1.0.0
+python -m bump_version.cli validate 1.0.0
 ```
 
 ## 版本格式
@@ -174,7 +173,7 @@ bvp
 在代码中使用版本验证功能：
 
 ```python
-from bump_version.validate_version import validate_version
+from bump_version.cli import validate_version
 
 if validate_version("1.0.0"):
     print("版本号有效")

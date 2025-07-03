@@ -8,14 +8,13 @@
 bump-version-py/
 ├── bump_version/               # 源代码
 │   ├── __init__.py
-│   ├── cli.py                 # 命令行接口
+│   ├── cli.py                 # 命令行接口（包含版本验证功能）
 │   ├── version_manager.py     # 版本管理核心逻辑
-│   ├── validate_version.py    # 版本验证工具
+│   ├── _version.py           # 版本信息管理
 │   └── py.typed              # PEP 561 类型标记
 ├── tests/                     # 测试代码
-│   ├── test_cli.py
+│   ├── test_cli.py           # CLI 测试（包含版本验证测试）
 │   ├── test_version_manager.py
-│   ├── test_validate_version.py
 │   └── test_integration.py
 ├── .github/                   # GitHub 配置
 │   └── workflows/
@@ -298,7 +297,7 @@ uv add package-name@latest
 uv run python -m bump_version.cli
 
 # 验证版本
-uv run python -m bump_version.validate_version 1.0.0
+uv run python -m bump_version.cli validate 1.0.0
 
 # 使用 pdb 调试
 uv run python -m pdb -m bump_version.cli

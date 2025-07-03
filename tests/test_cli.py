@@ -170,3 +170,98 @@ class TestConfigFileSupport:
             assert new_version == "2.0.0"
         finally:
             os.chdir(old_cwd)
+
+
+class TestVersionValidation:
+    """测试版本验证功能。"""
+
+    def test_validate_valid_versions(self):
+        """测试有效版本号的验证。"""
+        from bump_version.cli import validate_version
+
+        # 这些版本应该都是有效的
+        valid_versions = [
+            "1.0.0",
+            "0.1.0",
+            "2.5.3",
+            "1.0.0a1",
+            "1.0.0b2",
+            "1.0.0rc1",
+            "1.0.0.dev1",
+            "1.0.0+build.123",
+            "1.0.0-alpha.1",
+            "2021.4.0",
+            "1!1.0.0",  # epoch version
+            "v1.0.0",  # v prefix is valid
+            "1.a.0",  # letters in version parts are valid
+            "1.0",  # two-part version is valid
+            "1.0.0.0.0",  # multi-part version is valid
+        ]
+
+        for version in valid_versions:
+            assert validate_version(version) is True, f"Version {version} should be valid"
+
+    def test_validate_invalid_versions(self):
+        """测试无效版本号的验证。"""
+        from bump_version.cli import validate_version
+
+        # 这些版本应该都是无效的
+        invalid_versions = [
+            "1.0.0-",  # 无效的预发布版本
+            "abc",  # 非版本字符串
+            "",  # 空字符串
+            "1.0.0..dev1",  # 双点
+            "1.0.0.invalid",  # 无效的后缀
+            "1_0_0",  # 使用下划线
+        ]
+
+        for version in invalid_versions:
+            assert validate_version(version) is False, f"Version {version} should be invalid"
+
+    def test_validate_command_line_valid_version(self, temp_dir):
+        """测试命令行验证有效版本。"""
+        import subprocess
+        import sys
+
+        result = subprocess.run(
+            [sys.executable, "-m", "bump_version.cli", "validate", "1.0.0"], capture_output=True, text=True
+        )
+        assert result.returncode == 0
+        assert "✅" in result.stdout
+        assert "PEP 440 compliant" in result.stdout
+
+    def test_validate_command_line_invalid_version(self, temp_dir):
+        """测试命令行验证无效版本。"""
+        import subprocess
+        import sys
+
+        result = subprocess.run(
+            [sys.executable, "-m", "bump_version.cli", "validate", "invalid-version"], capture_output=True, text=True
+        )
+        assert result.returncode == 1
+        assert "❌" in result.stdout
+        assert "not PEP 440 compliant" in result.stdout
+
+    def test_validate_command_line_help(self, temp_dir):
+        """测试命令行验证的帮助信息。"""
+        import subprocess
+        import sys
+
+        result = subprocess.run([sys.executable, "-m", "bump_version.cli", "--help"], capture_output=True, text=True)
+        assert result.returncode == 0
+        assert "Commands:" in result.stdout
+        assert "validate" in result.stdout
+        assert "验证版本号是否符合 PEP 440 规范" in result.stdout
+
+    def test_validate_subcommand_help(self, temp_dir):
+        """测试 validate 子命令的帮助信息。"""
+        import subprocess
+        import sys
+
+        result = subprocess.run(
+            [sys.executable, "-m", "bump_version.cli", "validate", "--help"], capture_output=True, text=True
+        )
+        assert result.returncode == 0
+        assert "验证版本号是否符合 PEP 440 规范" in result.stdout
+        assert "示例:" in result.stdout
+        assert "退出码:" in result.stdout

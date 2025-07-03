@@ -21,8 +21,6 @@ text = "ISC"
 [project.scripts]
 bump-version-py = "bump_version.cli:main"
 bvp = "bump_version.cli:main"
-validate-version-py = "bump_version.validate_version:main"
-vvp = "bump_version.validate_version:main"
 
 [project.urls]
 Homepage = "https://github.com/ai-app-base/bump-version-py"

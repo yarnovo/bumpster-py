@@ -10,7 +10,7 @@ import toml
 # 添加项目根目录到 Python 路径
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from bump_version.cli import main
+from bump_version.cli import run_version_bump
 from tests.conftest import get_git_tags, get_last_commit_message, get_version_from_pyproject
 
 
@@ -38,7 +38,7 @@ class TestVersionBumping:
 
         # 执行主函数
         try:
-            main()
+            run_version_bump()
         except SystemExit:
             pass
 
@@ -70,7 +70,7 @@ class TestVersionBumping:
         monkeypatch.chdir(project_path)
 
         try:
-            main()
+            run_version_bump()
         except SystemExit:
             pass
 
@@ -96,7 +96,7 @@ class TestVersionBumping:
         monkeypatch.chdir(project_path)
 
         try:
-            main()
+            run_version_bump()
         except SystemExit:
             pass
 
@@ -122,7 +122,7 @@ class TestPrereleaseVersions:
         monkeypatch.chdir(project_path)
 
         try:
-            main()
+            run_version_bump()
         except SystemExit:
             pass
 
@@ -154,7 +154,7 @@ class TestPrereleaseVersions:
         monkeypatch.chdir(project_path)
 
         try:
-            main()
+            run_version_bump()
         except SystemExit:
             pass
 
@@ -182,7 +182,7 @@ class TestPrereleaseVersions:
         monkeypatch.chdir(project_path)
 
         try:
-            main()
+            run_version_bump()
         except SystemExit:
             pass
 
@@ -210,7 +210,7 @@ class TestPrereleaseVersions:
         monkeypatch.chdir(project_path)
 
         try:
-            main()
+            run_version_bump()
         except SystemExit:
             pass
 
@@ -238,7 +238,7 @@ class TestPrereleaseVersions:
         monkeypatch.chdir(project_path)
 
         try:
-            main()
+            run_version_bump()
         except SystemExit:
             pass
 
@@ -261,7 +261,7 @@ class TestDevAndPostVersions:
         monkeypatch.chdir(project_path)
 
         try:
-            main()
+            run_version_bump()
         except SystemExit:
             pass
 
@@ -289,7 +289,7 @@ class TestDevAndPostVersions:
         monkeypatch.chdir(project_path)
 
         try:
-            main()
+            run_version_bump()
         except SystemExit:
             pass
 
@@ -306,7 +306,7 @@ class TestDevAndPostVersions:
         monkeypatch.chdir(project_path)
 
         try:
-            main()
+            run_version_bump()
         except SystemExit:
             pass
 
@@ -334,7 +334,7 @@ class TestDevAndPostVersions:
         monkeypatch.chdir(project_path)
 
         try:
-            main()
+            run_version_bump()
         except SystemExit:
             pass
 
@@ -358,7 +358,7 @@ class TestErrorHandling:
 
         # 应该因为工作区不干净而退出
         with pytest.raises(SystemExit) as exc_info:
-            main()
+            run_version_bump()
 
         assert exc_info.value.code == 0  # 用户取消
 
@@ -382,7 +382,7 @@ class TestErrorHandling:
         monkeypatch.chdir(project_path)
 
         with pytest.raises(SystemExit) as exc_info:
-            main()
+            run_version_bump()
 
         assert exc_info.value.code == 0
 

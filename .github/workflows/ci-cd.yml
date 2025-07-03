@@ -76,7 +76,7 @@ jobs:
     - name: Publish to PyPI
       if: steps.check_tag.outputs.is_tag == 'true'
       env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        UV_PUBLISH_USERNAME: __token__
+        UV_PUBLISH_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
       run: |
         uv publish

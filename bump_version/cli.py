@@ -275,6 +275,9 @@ def main():
         console.print("\n[cyan]💾 提交版本更新...[/cyan]")
         if config_file == "pyproject.toml":
             exec_command("git add pyproject.toml")
+            # 如果存在 uv.lock，也添加它（因为版本号变化会更新 lock 文件）
+            if Path("uv.lock").exists():
+                exec_command("git add uv.lock")
         elif config_file == "setup.py":
             exec_command("git add setup.py")
 

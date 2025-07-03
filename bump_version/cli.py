@@ -271,6 +271,11 @@ def main():
         console.print(f"[cyan]📦 更新版本号到 {new_version}...[/cyan]")
         update_version_file(new_version, config_file)
 
+        # 如果是 pyproject.toml 且存在 uv.lock，运行 uv sync 更新 lock 文件
+        if config_file == "pyproject.toml" and Path("uv.lock").exists():
+            console.print("[dim]正在更新 uv.lock...[/dim]")
+            exec_command("uv sync --quiet", silent=True)
+
         # 2. 提交更改
         console.print("\n[cyan]💾 提交版本更新...[/cyan]")
         if config_file == "pyproject.toml":

@@ -65,6 +65,36 @@ class TestVersionParsing:
         assert result.prerelease_type == "dev"
         assert result.prerelease_num == 0
     
+    def test_parse_dev_version_compact(self):
+        """测试解析紧凑格式的开发版本。"""
+        manager = VersionManager()
+        result = manager.parse_version("1.0.0dev3")
+        
+        assert result is not None
+        assert result.prerelease_type == "dev"
+        assert result.prerelease_num == 3
+    
+    def test_parse_post_version(self):
+        """测试解析 post 版本。"""
+        manager = VersionManager()
+        result = manager.parse_version("1.0.0.post1")
+        
+        assert result is not None
+        assert result.prerelease_type == "post"
+        assert result.prerelease_num == 1
+    
+    def test_parse_post_version_compact(self):
+        """测试解析紧凑格式的 post 版本。"""
+        manager = VersionManager()
+        result = manager.parse_version("2.3.4post5")
+        
+        assert result is not None
+        assert result.major == 2
+        assert result.minor == 3
+        assert result.patch == 4
+        assert result.prerelease_type == "post"
+        assert result.prerelease_num == 5
+    
     def test_parse_version_with_v_prefix(self):
         """测试解析带 v 前缀的版本号。"""
         manager = VersionManager()
@@ -147,6 +177,42 @@ class TestVersionBumping:
         manager = VersionManager()
         result = manager.get_next_version("1.5.3", "major", True, "a")
         assert result == "2.0.0a0"
+    
+    def test_dev_version_increment(self):
+        """测试递增 dev 版本号。"""
+        manager = VersionManager()
+        result = manager.get_next_version("1.0.0dev0", "patch", True, "dev")
+        assert result == "1.0.0dev1"
+    
+    def test_upgrade_dev_to_alpha(self):
+        """测试从 dev 升级到 alpha。"""
+        manager = VersionManager()
+        result = manager.get_next_version("1.0.0dev3", "patch", True, "a")
+        assert result == "1.0.0a0"
+    
+    def test_create_post_from_production(self):
+        """测试从正式版本创建 post 版本。"""
+        manager = VersionManager()
+        result = manager.get_next_version("1.0.0", "patch", True, "post")
+        assert result == "1.0.0post0"
+    
+    def test_increment_post_version(self):
+        """测试递增 post 版本号。"""
+        manager = VersionManager()
+        result = manager.get_next_version("1.0.0post0", "patch", True, "post")
+        assert result == "1.0.0post1"
+    
+    def test_cannot_upgrade_prerelease_to_post(self):
+        """测试不能从预发布版本直接升级到 post。"""
+        manager = VersionManager()
+        with pytest.raises(ValueError, match="不能从预发布版本直接升级到 post 版本"):
+            manager.get_next_version("1.0.0a0", "patch", True, "post")
+    
+    def test_cannot_downgrade_from_post(self):
+        """测试不能从 post 版本降级到预发布版本。"""
+        manager = VersionManager()
+        with pytest.raises(ValueError, match="不能从 post 版本回到"):
+            manager.get_next_version("1.0.0post1", "patch", True, "a")
 
 
 class TestEdgeCases:

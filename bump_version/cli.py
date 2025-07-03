@@ -156,14 +156,22 @@ def main():
         # 构建发布类型选项
         choices = ["正式版本 (Production)"]
         
-        if not version_parts.prerelease_type or version_parts.prerelease_type == "a":
+        # Dev 版本只能在当前是 dev 版本或者没有预发布版本时选择
+        if not version_parts.prerelease_type or version_parts.prerelease_type == "dev":
+            choices.append("Dev 版本")
+        
+        if not version_parts.prerelease_type or version_parts.prerelease_type in ["dev", "a"]:
             choices.append("Alpha 版本")
         
-        if not version_parts.prerelease_type or version_parts.prerelease_type in ["a", "b"]:
+        if not version_parts.prerelease_type or version_parts.prerelease_type in ["dev", "a", "b"]:
             choices.append("Beta 版本")
         
-        if not version_parts.prerelease_type or version_parts.prerelease_type in ["a", "b", "rc"]:
+        if not version_parts.prerelease_type or version_parts.prerelease_type in ["dev", "a", "b", "rc"]:
             choices.append("RC 版本")
+        
+        # Post 版本只能从正式版本或者已有的 post 版本创建
+        if not version_parts.prerelease_type or version_parts.prerelease_type == "post":
+            choices.append("Post 版本")
         
         # 选择发布类型
         release_choice = list_input(
@@ -180,12 +188,16 @@ def main():
         is_prerelease = "正式版本" not in release_choice
         prerelease_type = None
         if is_prerelease:
-            if "Alpha" in release_choice:
+            if "Dev" in release_choice:
+                prerelease_type = "dev"
+            elif "Alpha" in release_choice:
                 prerelease_type = "a"
             elif "Beta" in release_choice:
                 prerelease_type = "b"
             elif "RC" in release_choice:
                 prerelease_type = "rc"
+            elif "Post" in release_choice:
+                prerelease_type = "post"
     
         # 选择版本号类型
         version_bump = "patch"
@@ -195,7 +207,7 @@ def main():
             if is_prerelease and prerelease_type == version_parts.prerelease_type:
                 console.print(f"[yellow]当前是 {version_parts.prerelease_type} 版本，将自动递增版本号[/yellow]")
             elif is_prerelease:
-                type_names = {"a": "Alpha", "b": "Beta", "rc": "RC"}
+                type_names = {"dev": "Dev", "a": "Alpha", "b": "Beta", "rc": "RC", "post": "Post"}
                 console.print(
                     f"[yellow]当前是 {type_names.get(version_parts.prerelease_type, version_parts.prerelease_type)} 版本，"
                     f"将切换到 {type_names.get(prerelease_type, prerelease_type)} 版本[/yellow]"

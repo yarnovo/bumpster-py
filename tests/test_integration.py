@@ -260,6 +260,105 @@ class TestPrereleaseVersions:
         assert new_version == "1.0.0"
 
 
+class TestDevAndPostVersions:
+    """测试 Dev 和 Post 版本功能。"""
+    
+    def test_create_dev_version_from_production(self, project_with_pyproject, mock_user_input, monkeypatch):
+        """测试从正式版本创建 dev 版本。"""
+        project_path = project_with_pyproject["path"]
+        
+        mock_user_input({
+            "选择发布类型": "Dev 版本",
+            "选择版本号递增类型": "Patch (修订号): 1.0.0 → 1.0.1dev0",
+            "确认执行": True
+        })
+        
+        monkeypatch.setenv("BUMP_VERSION_SKIP_PUSH", "true")
+        monkeypatch.chdir(project_path)
+        
+        try:
+            main()
+        except SystemExit:
+            pass
+        
+        new_version = get_version_from_pyproject(project_path)
+        assert new_version == "1.0.1dev0"
+    
+    def test_increment_dev_version(self, project_with_pyproject, mock_user_input, monkeypatch):
+        """测试递增 dev 版本。"""
+        project_path = project_with_pyproject["path"]
+        
+        # 先设置为 dev 版本
+        with open(project_path / "pyproject.toml", "r") as f:
+            data = toml.load(f)
+        data["project"]["version"] = "1.0.0dev0"
+        with open(project_path / "pyproject.toml", "w") as f:
+            toml.dump(data, f)
+        
+        mock_user_input({
+            "选择发布类型": "Dev 版本",
+            "确认执行": True
+        })
+        
+        monkeypatch.setenv("BUMP_VERSION_SKIP_PUSH", "true")
+        monkeypatch.chdir(project_path)
+        
+        try:
+            main()
+        except SystemExit:
+            pass
+        
+        new_version = get_version_from_pyproject(project_path)
+        assert new_version == "1.0.0dev1"
+    
+    def test_create_post_version_from_production(self, project_with_pyproject, mock_user_input, monkeypatch):
+        """测试从正式版本创建 post 版本。"""
+        project_path = project_with_pyproject["path"]
+        
+        mock_user_input({
+            "选择发布类型": "Post 版本",
+            "确认执行": True
+        })
+        
+        monkeypatch.setenv("BUMP_VERSION_SKIP_PUSH", "true")
+        monkeypatch.chdir(project_path)
+        
+        try:
+            main()
+        except SystemExit:
+            pass
+        
+        new_version = get_version_from_pyproject(project_path)
+        assert new_version == "1.0.0post0"
+    
+    def test_increment_post_version(self, project_with_pyproject, mock_user_input, monkeypatch):
+        """测试递增 post 版本。"""
+        project_path = project_with_pyproject["path"]
+        
+        # 先设置为 post 版本
+        with open(project_path / "pyproject.toml", "r") as f:
+            data = toml.load(f)
+        data["project"]["version"] = "1.0.0post0"
+        with open(project_path / "pyproject.toml", "w") as f:
+            toml.dump(data, f)
+        
+        mock_user_input({
+            "选择发布类型": "Post 版本",
+            "确认执行": True
+        })
+        
+        monkeypatch.setenv("BUMP_VERSION_SKIP_PUSH", "true")
+        monkeypatch.chdir(project_path)
+        
+        try:
+            main()
+        except SystemExit:
+            pass
+        
+        new_version = get_version_from_pyproject(project_path)
+        assert new_version == "1.0.0post1"
+
+
 class TestErrorHandling:
     """错误处理测试。"""
     

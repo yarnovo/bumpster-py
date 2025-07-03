@@ -279,6 +279,10 @@ class TestDevAndPostVersions:
         with open(project_path / "pyproject.toml", "w") as f:
             toml.dump(data, f)
 
+        # 提交更改
+        subprocess.run(["git", "add", "."], cwd=project_path, check=True)
+        subprocess.run(["git", "commit", "-m", "Update to dev version"], cwd=project_path, check=True)
+
         mock_user_input({"选择发布类型": "Dev 版本", "确认执行": True})
 
         monkeypatch.setenv("BUMP_VERSION_SKIP_PUSH", "true")
@@ -319,6 +323,10 @@ class TestDevAndPostVersions:
         data["project"]["version"] = "1.0.0post0"
         with open(project_path / "pyproject.toml", "w") as f:
             toml.dump(data, f)
+
+        # 提交更改
+        subprocess.run(["git", "add", "."], cwd=project_path, check=True)
+        subprocess.run(["git", "commit", "-m", "Update to post version"], cwd=project_path, check=True)
 
         mock_user_input({"选择发布类型": "Post 版本", "确认执行": True})
 

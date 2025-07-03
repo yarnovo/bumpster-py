@@ -113,8 +113,8 @@ def mock_user_input(monkeypatch):
                     return value
             return default
 
-        monkeypatch.setattr("inquirer.list_input", mock_list_input)
-        monkeypatch.setattr("inquirer.confirm", mock_confirm)
+        monkeypatch.setattr("bump_version.cli.list_input", mock_list_input)
+        monkeypatch.setattr("bump_version.cli.confirm", mock_confirm)
 
     return _mock_input
 

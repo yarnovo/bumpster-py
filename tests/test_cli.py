@@ -36,7 +36,7 @@ class TestCLI:
 
         # 应该报错并退出
         assert result.returncode == 1
-        assert "未找到版本配置文件" in result.stdout
+        assert "未找到 Python 项目配置文件" in result.stdout
 
     def test_show_version_info(self, project_with_pyproject):
         """测试显示版本信息。"""

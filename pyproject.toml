@@ -1,6 +1,6 @@
 [project]
 name = "ai-app-base-bump-version"
-version = "0.1.0.dev8"
+version = "0.1.0rc0"
 description = "A CLI tool for semantic version management"
 readme = "README.md"
 requires-python = ">=3.12"

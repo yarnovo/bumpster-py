@@ -148,11 +148,11 @@ uv sync
 uv run pytest
 
 # 代码格式化
-uv run black bump_version/
-uv run ruff check bump_version/
+uv run ruff format bump_version/
+uv run ruff check --fix bump_version/
 
 # 类型检查
-uv run mypy bump_version/
+uv run pyright bump_version/
 ```
 
 ## 构建和发布

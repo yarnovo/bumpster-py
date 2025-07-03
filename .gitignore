@@ -81,7 +81,7 @@ profile_default/
 ipython_config.py
 
 # pyenv
-.python-version
+# .python-version  # 项目级 Python 版本配置，应该被提交
 
 # pipenv
 Pipfile.lock

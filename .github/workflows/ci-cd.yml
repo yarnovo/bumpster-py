@@ -58,19 +58,8 @@ jobs:
             TAG="${BASH_REMATCH[1]}"
           fi
           
-          # 使用 Python packaging 库验证 PEP 440 版本号格式
-          # 使用 uv run 确保 packaging 库可用
-          if uv run python -c "
-          from packaging.version import Version, InvalidVersion
-          import sys
-          try:
-              Version('$TAG')
-              print(f'✅ Version $TAG is PEP 440 compliant')
-              sys.exit(0)
-          except InvalidVersion:
-              print(f'❌ Version $TAG is not PEP 440 compliant')
-              sys.exit(1)
-          "; then
+          # 使用独立脚本验证 PEP 440 版本号格式
+          if uv run python .github/scripts/validate_version.py "$TAG"; then
             echo "version=$TAG" >> $GITHUB_OUTPUT
           else
             exit 1

@@ -1,6 +1,6 @@
 [project]
 name = "bumpster"
-version = "0.0.0"
+version = "0.1.0.dev0"
 description = "A CLI tool for semantic version management"
 readme = "README.md"
 requires-python = ">=3.12"

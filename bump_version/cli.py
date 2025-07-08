@@ -150,6 +150,12 @@ def run_version_bump(dry_run=False):
         console.print(f"[cyan]📦 当前版本: {current_version}[/cyan]")
         console.print(f"[cyan]📄 配置文件: {config_file}[/cyan]")
         console.print(f"[cyan]🌿 当前分支: {current_branch}[/cyan]")
+
+        # 如果是干跑模式，显示明显的提示
+        if dry_run:
+            console.print()
+            console.print("[bold yellow]🎭 干跑模式已启用 - 所有操作仅为预览，不会实际执行[/bold yellow]")
+
         console.print()
 
         # 检查分支

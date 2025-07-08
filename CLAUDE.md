@@ -6,12 +6,19 @@ Bumpster 是一个专为 Python 项目设计的智能语义化版本管理命令
 
 ### 项目元信息
 - **包名**: `bumpster` (原名: `ai-app-base-bump-version`)
-- **版本**: 0.1.1
+- **版本**: 0.0.0 (重置版本，准备新的发布周期)
 - **Python 版本要求**: >=3.12
 - **许可证**: ISC
 - **命令行工具**: `bump` (主命令), `bump-py` (别名)
 - **仓库地址**: https://github.com/yarnovo/bumpster-py
 - **包名变更日期**: 2025-07-08
+
+### 核心功能
+- **交互式版本管理**: 自动检测当前版本，提供友好的交互界面
+- **PEP 440 合规**: 完全遵循 Python 版本规范
+- **Git 集成**: 自动创建提交、标签和推送
+- **干跑模式**: `--dry-run` 参数支持预览操作而不实际执行
+- **版本验证**: `validate` 子命令验证版本号合规性
 
 ## 技术栈
 
@@ -145,9 +152,23 @@ make pre-commit           # 重新安装 pre-commit 钩子（重要！）
 2. **命令变更**: `bump-version-py`/`bvp` → `bump`/`bump-py`
 3. **仓库迁移**: `github.com/ai-app-base/bump-version-py` → `github.com/yarnovo/bumpster-py`
 4. **新增文档**: TESTING.md - 详细的测试指南和本地安装说明
+5. **版本重置**: 将版本号重置为 0.0.0，删除所有历史 git tags，准备新的发布周期
+6. **新增功能**: 添加 `--dry-run` 干跑模式，支持预览操作而不实际执行
 
 ### 重要操作记录
 - 删除 .venv 后必须执行 `make pre-commit` 重新安装 Git 钩子
 - pyright 是 Python 包，通过 `uv sync` 安装，不是通过 npm
 
-<!-- 最后检查时间: 2025-07-08T06:22:36.352Z -->
+### 干跑模式实现细节
+- **命令**: `bump --dry-run` 或 `bump-py --dry-run`
+- **实现方式**: 通过在 `run_version_bump` 函数中传递 `dry_run` 参数
+- **功能特点**:
+  - 显示"干跑模式"提示
+  - 跳过确认提示
+  - 显示将要执行的所有 Git 命令
+  - 不修改任何文件
+  - 不创建提交或标签
+  - 完成后显示特殊的干跑完成消息
+- **测试**: 在 `test_cli.py` 中添加了 `test_dry_run_mode` 测试用例
+
+<!-- 最后检查时间: 2025-07-08T06:53:06.117Z -->

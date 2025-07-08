@@ -1,6 +1,6 @@
 # 部署文档
 
-本文档介绍 `bump-version-py` 项目的 CI/CD 配置和自动化部署流程。
+本文档介绍 `bumpster` 项目的 CI/CD 配置和自动化部署流程。
 
 ## GitHub Actions 概述
 
@@ -176,7 +176,7 @@ jobs:
 1. 登录 [PyPI](https://pypi.org/)
 2. 进入账户设置 -> API tokens
 3. 创建新的 API token
-   - Token 名称：`bump-version-py`
+   - Token 名称：`bumpster`
    - 范围：选择特定项目或整个账户
 
 ### 2. 配置 GitHub Secrets
@@ -285,7 +285,7 @@ git push origin main --follow-tags
 ## 最佳实践
 
 1. **版本管理**
-   - 始终使用 `bvp` 工具管理版本
+   - 始终使用 `bump` 工具管理版本
    - 遵循语义化版本规范
    - 在发布前充分测试
 

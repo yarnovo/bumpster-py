@@ -350,15 +350,15 @@ def run_version_bump():
 
 @click.group(invoke_without_command=True)
 @click.pass_context
-@click.version_option(version=get_package_version(), prog_name="bump-version-py")
+@click.version_option(version=get_package_version(), prog_name="bump")
 def main(ctx):
     """Python 项目版本号管理工具 - 自动更新版本号并创建 Git 标签
 
     \b
     使用方法:
-      bump-version-py              运行交互式版本管理（默认）
-      bump-version-py validate      验证版本号
-      bvp                          简写命令
+      bump                          运行交互式版本管理（默认）
+      bump validate                 验证版本号
+      bump-py                       别名命令
 
     \b
     功能特性:
@@ -371,9 +371,9 @@ def main(ctx):
 
     \b
     示例:
-      bump-version-py                     # 交互式版本管理
-      bump-version-py validate 1.0.0      # 验证版本号
-      bvp validate 1.0.0a0               # 验证 Alpha 版本
+      bump                               # 交互式版本管理
+      bump validate 1.0.0                # 验证版本号
+      bump-py validate 1.0.0a0           # 验证 Alpha 版本
 
     \b
     版本格式:
@@ -402,11 +402,11 @@ def validate(version):
 
     \b
     示例:
-      bump-version-py validate 1.0.0      ✅ 有效版本
-      bump-version-py validate v1.0.0     ✅ 有效版本（自动处理 v 前缀）
-      bump-version-py validate 1.0        ✅ 有效版本
-      bump-version-py validate 1.0.0a0    ✅ 有效的 Alpha 版本
-      bump-version-py validate invalid    ❌ 无效版本
+      bump validate 1.0.0                ✅ 有效版本
+      bump validate v1.0.0               ✅ 有效版本（自动处理 v 前缀）
+      bump validate 1.0                  ✅ 有效版本
+      bump validate 1.0.0a0              ✅ 有效的 Alpha 版本
+      bump validate invalid              ❌ 无效版本
 
     \b
     退出码:
@@ -415,7 +415,7 @@ def validate(version):
 
     \b
     在 CI/CD 中使用:
-      if bump-version-py validate "$VERSION"; then
+      if bump validate "$VERSION"; then
         echo "Version is valid"
       else
         echo "Version is invalid"

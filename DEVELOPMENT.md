@@ -1,11 +1,11 @@
 # 开发文档
 
-本文档包含 `bump-version-py` 项目的开发相关信息。
+本文档包含 `bumpster` 项目的开发相关信息。
 
 ## 项目结构
 
 ```
-bump-version-py/
+bumpster-py/
 ├── bump_version/               # 源代码
 │   ├── __init__.py
 │   ├── cli.py                 # 命令行接口（包含版本验证功能）

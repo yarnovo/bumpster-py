@@ -2,7 +2,7 @@
 
 # 默认目标：显示帮助信息
 help:
-	@echo "bump-version-py 开发常用命令："
+	@echo "bumpster 开发常用命令："
 	@echo ""
 	@echo "开发环境设置："
 	@echo "  make sync                 - 同步依赖（使用 uv sync）"
@@ -35,7 +35,7 @@ sync:
 # 全局开发安装（类似 npm link）
 dev-install-global:
 	uv tool install -e .
-	@echo "✅ 已全局安装开发版本，可以在任何地方使用 'bump-version' 或 'bvp' 命令"
+	@echo "✅ 已全局安装开发版本，可以在任何地方使用 'bump' 或 'bump-py' 命令"
 
 # 卸载全局开发版本
 dev-uninstall-global:

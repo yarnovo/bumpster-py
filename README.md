@@ -4,7 +4,7 @@
 
 ## 简介
 
-`bumpster` (原名 `bump-version-py`) 是一个遵循 PEP 440 规范的 Python 项目版本管理工具。它可以自动更新项目版本号，创建 Git 提交和标签，简化版本发布流程。
+`bumpster` 是一个遵循 PEP 440 规范的 Python 项目版本管理工具。它可以自动更新项目版本号，创建 Git 提交和标签，简化版本发布流程。
 
 ## 主要功能
 
@@ -132,7 +132,7 @@ setup(
 
 ```bash
 # 1. 开发完成，准备发布新版本
-bvp
+bump
 # 选择 "正式版本 (Production)"
 # 选择 "Patch (修订号)"
 # 版本：1.0.0 → 1.0.1
@@ -148,18 +148,18 @@ bvp
 
 ```bash
 # 1. 创建 Alpha 版本
-bvp
+bump
 # 选择 "Alpha 版本"
 # 选择 "Minor (次版本号)"
 # 版本：1.0.0 → 1.1.0a0
 
 # 2. 升级到 Beta
-bvp
+bump
 # 选择 "Beta 版本"
 # 版本：1.1.0a0 → 1.1.0b0
 
 # 3. 发布正式版
-bvp
+bump
 # 选择 "正式版本 (Production)"
 # 版本：1.1.0b0 → 1.1.0
 ```

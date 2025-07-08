@@ -1,10 +1,10 @@
-# bump-version-py
+# bumpster
 
 专为 Python 项目设计的智能语义化版本管理命令行工具。
 
 ## 简介
 
-`bump-version-py` 是一个遵循 PEP 440 规范的 Python 项目版本管理工具。它可以自动更新项目版本号，创建 Git 提交和标签，简化版本发布流程。
+`bumpster` (原名 `bump-version-py`) 是一个遵循 PEP 440 规范的 Python 项目版本管理工具。它可以自动更新项目版本号，创建 Git 提交和标签，简化版本发布流程。
 
 ## 主要功能
 
@@ -28,7 +28,7 @@ uv tool install bumpster
 ```bash
 # 克隆仓库
 git clone https://github.com/ai-app-base/bump-version-py.git
-cd bump-version-py
+cd bumpster-py
 
 # 安装依赖
 uv sync
@@ -44,11 +44,11 @@ uv tool install -e .
 在项目根目录运行：
 
 ```bash
-# 完整命令
-bump-version-py
+# 主命令
+bump
 
-# 简写命令
-bvp
+# 别名
+bump-py
 ```
 
 工具会自动：
@@ -64,9 +64,9 @@ bvp
 
 ```bash
 # 验证版本号
-bump-version-py validate 1.0.0
-bump-version-py validate 1.0.0a0
-bvp validate 2.0.0.dev1
+bump validate 1.0.0
+bump validate 1.0.0a0
+bump-py validate 2.0.0.dev1
 
 # 输出示例
 ✅ Version 1.0.0 is PEP 440 compliant  # 退出码 0
@@ -77,7 +77,7 @@ bvp validate 2.0.0.dev1
 
 ```bash
 # 在 shell 脚本中
-if bump-version-py validate "$VERSION"; then
+if bump validate "$VERSION"; then
   echo "版本号有效"
 else
   echo "版本号无效"
@@ -194,6 +194,12 @@ else:
 
 3. Git 标签格式：
    - 自动添加 'v' 前缀：v1.0.0
+
+## 文档
+
+- [测试指南](TESTING.md) - 本地测试和全局安装说明
+- [开发指南](DEVELOPMENT.md) - 开发环境设置和工作流程
+- [部署指南](DEPLOYMENT.md) - 发布和部署流程
 
 ## 许可证
 

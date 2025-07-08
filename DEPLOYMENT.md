@@ -193,7 +193,7 @@ jobs:
 
 1. 使用工具更新版本：
    ```bash
-   bvp
+   bump
    # 选择版本类型和升级方式
    ```
 
@@ -241,7 +241,7 @@ git push origin main --follow-tags
 在 README 中添加构建状态徽章：
 
 ```markdown
-[![CI/CD](https://github.com/ai-app-base/bump-version-py/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/ai-app-base/bump-version-py/actions/workflows/ci-cd.yml)
+[![CI/CD](https://github.com/ai-app-base/bumpster-py/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/ai-app-base/bumpster-py/actions/workflows/ci-cd.yml)
 ```
 
 ## 故障排查

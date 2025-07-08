@@ -31,7 +31,7 @@ bump-version-py/
 
 ```bash
 git clone https://github.com/ai-app-base/bump-version-py.git
-cd bump-version-py
+cd bumpster-py
 ```
 
 ### 2. 安装依赖
@@ -210,7 +210,7 @@ CI 流程：
 
 1. 使用工具更新版本：
    ```bash
-   bvp
+   bump
    ```
 
 2. 工具自动完成：

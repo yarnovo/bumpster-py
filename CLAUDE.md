@@ -73,8 +73,7 @@ make pre-commit           # 重新安装 pre-commit 钩子（重要！）
 - `make lint`: 运行代码检查
 - `make type-check`: 运行 pyright 类型检查
 - `make test`: 运行所有测试
-- `make check`: 运行 lint + type-check
-- `make all`: 运行所有检查和测试
+- `make check`: 运行 lint + type-check + test
 - `make build`: 构建发布包
 - `make dev-install-global`: 全局安装开发版本
 

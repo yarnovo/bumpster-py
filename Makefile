@@ -14,8 +14,7 @@ help:
 	@echo "  make format        - 格式化代码（ruff format + ruff fix）"
 	@echo "  make lint          - 代码检查（ruff）"
 	@echo "  make type-check    - 类型检查（pyright）"
-	@echo "  make check         - 运行所有检查（lint + type-check）"
-	@echo "  make all           - 运行所有检查和测试"
+	@echo "  make check         - 运行所有检查（lint + type-check + test）"
 	@echo ""
 	@echo "Pre-commit hooks："
 	@echo "  make pre-commit     - 安装 pre-commit hooks"
@@ -60,10 +59,7 @@ type-check:
 	uv run pyright bump_version/
 
 # 运行所有检查
-check: lint type-check
-
-# 运行所有检查和测试
-all: check test
+check: lint type-check test
 
 # 构建包
 build:

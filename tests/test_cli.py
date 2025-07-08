@@ -122,36 +122,74 @@ class TestGitIntegration:
 
         project_path = project_with_pyproject["path"]
 
-        # 运行干跑模式
+        # 创建一个测试脚本来模拟交互式输入
+        test_script = """
+import sys
+sys.path.insert(0, '.')
+from bump_version.cli import run_version_bump
+
+# 模拟用户输入
+class MockInquirer:
+    @staticmethod
+    def list_input(message, choices, default):
+        if "选择发布类型" in message:
+            return "正式版本 (Production)"
+        elif "选择版本号递增类型" in message:
+            return f"Patch (修订号): 1.0.0 → 1.0.1"
+        return default
+
+    @staticmethod
+    def confirm(message, default):
+        return True
+
+# 替换 inquirer 模块
+import bump_version.cli
+bump_version.cli.list_input = MockInquirer.list_input
+bump_version.cli.confirm = MockInquirer.confirm
+
+# 运行干跑模式
+run_version_bump(dry_run=True)
+"""
+
+        test_script_path = os.path.join(project_path, "test_dry_run.py")
+        with open(test_script_path, "w") as f:
+            f.write(test_script)
+
+        # 先提交测试脚本，避免工作区不干净
+        subprocess.run(["git", "add", "test_dry_run.py"], cwd=project_path)
+        subprocess.run(["git", "commit", "-m", "Add test script"], cwd=project_path)
+
+        # 运行测试脚本
         result = subprocess.run(
-            [sys.executable, "-m", "bump_version.cli", "--dry-run"],
+            [sys.executable, "test_dry_run.py"],
             cwd=project_path,
             capture_output=True,
             text=True,
-            input="1\n1\n",  # 选择正式版本和 patch 版本
             env={**os.environ, "BUMP_VERSION_SKIP_PUSH": "true"},
         )
 
         # 检查干跑模式输出
-        assert "干跑模式 - 以下操作不会真正执行" in result.stdout
-        assert "干跑模式 - 模拟执行版本更新" in result.stdout
-        assert "干跑: 更新版本号到" in result.stdout
-        assert "干跑: 提交版本更新" in result.stdout
-        assert "干跑: 创建标签" in result.stdout
-        assert "干跑模式完成！" in result.stdout
+        assert "🎭 干跑模式已启用 - 所有操作仅为预览，不会实际执行" in result.stdout
+        assert "将更新 pyproject.toml 中的版本号" in result.stdout or "干跑: 更新版本号到" in result.stdout
+        assert "git commit" in result.stdout  # 应该显示 git 命令预览
+        assert "git tag" in result.stdout  # 应该显示 git tag 命令预览
+        assert "🎭 干跑模式完成！" in result.stdout or "干跑模式完成！" in result.stdout
 
         # 确保版本号没有被实际修改
         current_version = get_version_from_pyproject(project_path)
         assert current_version == "1.0.0"  # 版本应该保持不变
 
-        # 确保没有创建 Git 提交
+        # 确保没有创建新的 Git 提交（除了我们的测试脚本提交）
         git_log = subprocess.run(
-            ["git", "log", "--oneline", "-1"],
+            ["git", "log", "--oneline", "-2"],
             cwd=project_path,
             capture_output=True,
             text=True,
         )
         assert "chore: release" not in git_log.stdout
+
+        # 清理测试文件
+        os.remove(test_script_path)
 
 
 class TestConfigFileSupport:

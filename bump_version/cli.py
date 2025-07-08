@@ -297,34 +297,50 @@ def run_version_bump(dry_run=False):
         console.print(f'\n[dim]提交信息预览: "chore: release {new_version}"[/dim]')
 
         # 确认执行
-        if not confirm("确认执行以上步骤？", default=True):
-            console.print("[red]✖ 发布已取消[/red]")
-            sys.exit(0)
+        if not dry_run:
+            if not confirm("确认执行以上步骤？", default=True):
+                console.print("[red]✖ 发布已取消[/red]")
+                sys.exit(0)
 
         # 执行版本更新流程
         console.print()
         console.print("[bold green]🏃 开始执行版本更新...[/bold green]")
         console.print()
         # 1. 更新版本号
-        console.print(f"[cyan]📦 更新版本号到 {new_version}...[/cyan]")
-        update_version_file(new_version, config_file)
+        console.print(f"[cyan]📦 {'干跑: ' if dry_run else ''}更新版本号到 {new_version}...[/cyan]")
+        if not dry_run:
+            update_version_file(new_version, config_file)
+        else:
+            console.print(f"[dim]  将更新 {config_file} 中的版本号[/dim]")
 
         # 如果是 pyproject.toml 且存在 uv.lock，运行 uv sync 更新 lock 文件
         if config_file == "pyproject.toml" and Path("uv.lock").exists():
-            console.print("[dim]正在更新 uv.lock...[/dim]")
-            exec_command("uv sync --quiet", silent=True)
+            if not dry_run:
+                console.print("[dim]正在更新 uv.lock...[/dim]")
+                exec_command("uv sync --quiet", silent=True)
+            else:
+                console.print("[dim]  uv sync --quiet[/dim]")
 
         # 2. 提交更改
-        console.print("\n[cyan]💾 提交版本更新...[/cyan]")
-        if config_file == "pyproject.toml":
-            exec_command("git add pyproject.toml")
-            # 如果存在 uv.lock，也添加它（因为版本号变化会更新 lock 文件）
-            if Path("uv.lock").exists():
-                exec_command("git add uv.lock")
-        elif config_file == "setup.py":
-            exec_command("git add setup.py")
+        console.print(f"\n[cyan]💾 {'干跑: ' if dry_run else ''}提交版本更新...[/cyan]")
+        if not dry_run:
+            if config_file == "pyproject.toml":
+                exec_command("git add pyproject.toml")
+                # 如果存在 uv.lock，也添加它（因为版本号变化会更新 lock 文件）
+                if Path("uv.lock").exists():
+                    exec_command("git add uv.lock")
+            elif config_file == "setup.py":
+                exec_command("git add setup.py")
 
-        exec_command(f'git commit -m "chore: release {new_version}"')
+            exec_command(f'git commit -m "chore: release {new_version}"')
+        else:
+            if config_file == "pyproject.toml":
+                console.print("[dim]  git add pyproject.toml[/dim]")
+                if Path("uv.lock").exists():
+                    console.print("[dim]  git add uv.lock[/dim]")
+            elif config_file == "setup.py":
+                console.print("[dim]  git add setup.py[/dim]")
+            console.print(f'[dim]  git commit -m "chore: release {new_version}"[/dim]')
 
         # 3. 创建标签
         console.print(f"\n[cyan]🏷️  {'干跑: ' if dry_run else ''}创建标签 {tag_name}...[/cyan]")

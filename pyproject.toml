@@ -1,5 +1,5 @@
 [project]
-name = "ai-app-base-bump-version"
+name = "bumpster"
 version = "0.1.1"
 description = "A CLI tool for semantic version management"
 readme = "README.md"
@@ -19,8 +19,8 @@ dev = [ "pytest>=7.0.0", "pytest-cov>=4.0.0", "pyright>=1.1.0", "ruff>=0.1.0", "
 text = "ISC"
 
 [project.scripts]
-bump-version-py = "bump_version.cli:main"
-bvp = "bump_version.cli:main"
+bump = "bump_version.cli:main"
+bump-py = "bump_version.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/ai-app-base/bump-version-py"

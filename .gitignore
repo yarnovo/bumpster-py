@@ -154,3 +154,6 @@ Thumbs.db
 
 # uv
 .uv/
+
+.claude_memory_cache.json
+.claude_logs/

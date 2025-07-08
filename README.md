@@ -20,7 +20,7 @@
 
 ```bash
 # 使用 uv 全局安装
-uv tool install ai-app-base-bump-version
+uv tool install bumpster
 ```
 
 ### 开发安装

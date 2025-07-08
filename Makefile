@@ -39,7 +39,7 @@ dev-install-global:
 
 # 卸载全局开发版本
 dev-uninstall-global:
-	uv tool uninstall ai-app-base-bump-version
+	uv tool uninstall bumpster
 	@echo "✅ 已卸载全局开发版本"
 
 # 运行测试

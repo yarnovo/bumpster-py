@@ -137,7 +137,7 @@ def check_git_status() -> bool:
     return True
 
 
-def run_version_bump():
+def run_version_bump(dry_run=False):
     """执行版本升级的核心逻辑。"""
     try:
         console.print(Panel.fit("🔢 版本号管理工具", style="bold blue"))
@@ -321,17 +321,28 @@ def run_version_bump():
         exec_command(f'git commit -m "chore: release {new_version}"')
 
         # 3. 创建标签
-        console.print(f"\n[cyan]🏷️  创建标签 {tag_name}...[/cyan]")
-        exec_command(f'git tag -a {tag_name} -m "Release {new_version}"')
+        console.print(f"\n[cyan]🏷️  {'干跑: ' if dry_run else ''}创建标签 {tag_name}...[/cyan]")
+        if not dry_run:
+            exec_command(f'git tag -a {tag_name} -m "Release {new_version}"')
+        else:
+            console.print(f'[dim]  git tag -a {tag_name} -m "Release {new_version}"[/dim]')
 
         # 4. 推送提交和标签
         if not os.environ.get("BUMP_VERSION_SKIP_PUSH"):
-            console.print("\n[cyan]📤 推送提交和标签到远程仓库...[/cyan]")
-            exec_command("git push --follow-tags")
+            console.print(f"\n[cyan]📤 {'干跑: ' if dry_run else ''}推送提交和标签到远程仓库...[/cyan]")
+            if not dry_run:
+                exec_command("git push --follow-tags")
+            else:
+                console.print("[dim]  git push --follow-tags[/dim]")
 
         console.print()
-        console.print("[bold green]✅ 版本更新成功！[/bold green]")
-        console.print(f"版本 {new_version} 已创建并推送到远程仓库")
+        if dry_run:
+            console.print("[bold yellow]🎭 干跑模式完成！[/bold yellow]")
+            console.print(f"如果执行真实操作，版本 {new_version} 将被创建并推送到远程仓库")
+            console.print("\n[dim]提示: 移除 --dry-run 参数以执行真实的版本更新[/dim]")
+        else:
+            console.print("[bold green]✅ 版本更新成功！[/bold green]")
+            console.print(f"版本 {new_version} 已创建并推送到远程仓库")
 
         if config_file == "pyproject.toml":
             console.print("\n[bold blue]📦 发布到 PyPI:[/bold blue]")
@@ -351,12 +362,14 @@ def run_version_bump():
 @click.group(invoke_without_command=True)
 @click.pass_context
 @click.version_option(version=get_package_version(), prog_name="bump")
-def main(ctx):
+@click.option("--dry-run", is_flag=True, help="显示将要执行的操作但不实际执行（无副作用）")
+def main(ctx, dry_run):
     """Python 项目版本号管理工具 - 自动更新版本号并创建 Git 标签
 
     \b
     使用方法:
       bump                          运行交互式版本管理（默认）
+      bump --dry-run                干跑模式，显示将要执行的操作但不实际执行
       bump validate                 验证版本号
       bump-py                       别名命令
 
@@ -368,10 +381,12 @@ def main(ctx):
       • 自动创建 Git 提交和标签
       • 版本号格式验证
       • 安全检查（分支和工作区状态）
+      • 干跑模式（--dry-run）
 
     \b
     示例:
       bump                               # 交互式版本管理
+      bump --dry-run                     # 干跑模式，预览操作
       bump validate 1.0.0                # 验证版本号
       bump-py validate 1.0.0a0           # 验证 Alpha 版本
 
@@ -392,7 +407,7 @@ def main(ctx):
     """
     # 如果没有子命令，执行默认的版本升级
     if ctx.invoked_subcommand is None:
-        run_version_bump()
+        run_version_bump(dry_run=dry_run)
 
 
 @main.command()

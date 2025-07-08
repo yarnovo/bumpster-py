@@ -115,6 +115,44 @@ class TestGitIntegration:
         finally:
             os.chdir(old_cwd)
 
+    def test_dry_run_mode(self, project_with_pyproject):
+        """测试干跑模式。"""
+        import os
+        import sys
+
+        project_path = project_with_pyproject["path"]
+
+        # 运行干跑模式
+        result = subprocess.run(
+            [sys.executable, "-m", "bump_version.cli", "--dry-run"],
+            cwd=project_path,
+            capture_output=True,
+            text=True,
+            input="1\n1\n",  # 选择正式版本和 patch 版本
+            env={**os.environ, "BUMP_VERSION_SKIP_PUSH": "true"},
+        )
+
+        # 检查干跑模式输出
+        assert "干跑模式 - 以下操作不会真正执行" in result.stdout
+        assert "干跑模式 - 模拟执行版本更新" in result.stdout
+        assert "干跑: 更新版本号到" in result.stdout
+        assert "干跑: 提交版本更新" in result.stdout
+        assert "干跑: 创建标签" in result.stdout
+        assert "干跑模式完成！" in result.stdout
+
+        # 确保版本号没有被实际修改
+        current_version = get_version_from_pyproject(project_path)
+        assert current_version == "1.0.0"  # 版本应该保持不变
+
+        # 确保没有创建 Git 提交
+        git_log = subprocess.run(
+            ["git", "log", "--oneline", "-1"],
+            cwd=project_path,
+            capture_output=True,
+            text=True,
+        )
+        assert "chore: release" not in git_log.stdout
+
 
 class TestConfigFileSupport:
     """测试不同配置文件的支持。"""

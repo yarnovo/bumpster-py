@@ -27,7 +27,7 @@ uv tool install bumpster
 
 ```bash
 # 克隆仓库
-git clone https://github.com/ai-app-base/bump-version-py.git
+git clone https://github.com/yarnovo/bumpster-py.git
 cd bumpster-py
 
 # 安装依赖

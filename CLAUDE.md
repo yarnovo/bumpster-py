@@ -10,6 +10,8 @@ Bumpster 是一个专为 Python 项目设计的智能语义化版本管理命令
 - **Python 版本要求**: >=3.12
 - **许可证**: ISC
 - **命令行工具**: `bump` (主命令), `bump-py` (别名)
+- **仓库地址**: https://github.com/yarnovo/bumpster-py
+- **包名变更日期**: 2025-07-08
 
 ## 技术栈
 
@@ -136,4 +138,16 @@ make pre-commit           # 重新安装 pre-commit 钩子（重要！）
    - DEVELOPMENT.md - 开发环境和流程
    - DEPLOYMENT.md - 部署和发布流程
 
-<!-- 最后更新时间: 2025-07-08T05:35:00Z -->
+## 项目迁移记录
+
+### 2025-07-08 项目重要变更
+1. **包名变更**: `ai-app-base-bump-version` → `bumpster`
+2. **命令变更**: `bump-version-py`/`bvp` → `bump`/`bump-py`
+3. **仓库迁移**: `github.com/ai-app-base/bump-version-py` → `github.com/yarnovo/bumpster-py`
+4. **新增文档**: TESTING.md - 详细的测试指南和本地安装说明
+
+### 重要操作记录
+- 删除 .venv 后必须执行 `make pre-commit` 重新安装 Git 钩子
+- pyright 是 Python 包，通过 `uv sync` 安装，不是通过 npm
+
+<!-- 最后检查时间: 2025-07-08T06:22:36.352Z -->

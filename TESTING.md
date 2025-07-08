@@ -81,11 +81,11 @@ uv tool install dist/bumpster-*.whl
 
 ```bash
 # 直接从 GitHub 安装
-uv tool install git+https://github.com/ai-app-base/bumpster-py.git
+uv tool install git+https://github.com/yarnovo/bumpster-py.git
 
 # 安装特定分支或标签
-uv tool install git+https://github.com/ai-app-base/bumpster-py.git@main
-uv tool install git+https://github.com/ai-app-base/bumpster-py.git@v0.1.1
+uv tool install git+https://github.com/yarnovo/bumpster-py.git@main
+uv tool install git+https://github.com/yarnovo/bumpster-py.git@v0.1.1
 ```
 
 ### 全局卸载

@@ -30,7 +30,7 @@ bump-version-py/
 ### 1. 克隆仓库
 
 ```bash
-git clone https://github.com/ai-app-base/bump-version-py.git
+git clone https://github.com/yarnovo/bumpster-py.git
 cd bumpster-py
 ```
 

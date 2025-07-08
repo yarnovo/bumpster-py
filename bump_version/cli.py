@@ -388,7 +388,7 @@ def main(ctx):
     环境变量:
       BUMP_VERSION_SKIP_PUSH  设置后跳过 git push
 
-    更多信息请访问: https://github.com/ai-app-base/bump-version-py
+    更多信息请访问: https://github.com/yarnovo/bumpster-py
     """
     # 如果没有子命令，执行默认的版本升级
     if ctx.invoked_subcommand is None:
